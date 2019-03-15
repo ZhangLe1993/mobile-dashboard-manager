@@ -8,8 +8,7 @@ spring:
     password: 852456
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-  resources:
-    static-locations: classpath:/
+
 #Redis-info
 redis_host: 127.0.0.1
 redis_port: 6379
