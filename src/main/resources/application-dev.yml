@@ -7,3 +7,7 @@ spring:
 server:
   port: 8081
 
+redis_host: 10.81.44.187
+redis_port: 6379
+redis_db: 33
+redis_pw: 123456
