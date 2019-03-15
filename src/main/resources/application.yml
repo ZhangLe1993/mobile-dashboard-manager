@@ -10,7 +10,6 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
   resources:
     static-locations: classpath:/web/dist/
-
 #Redis-info
 redis_host: 127.0.0.1
 redis_port: 6379
