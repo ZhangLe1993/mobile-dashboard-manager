@@ -19,7 +19,7 @@ public class UserC {
     @Resource
     private UserService userService;
 
-    @RequestMapping(value = "/user", produces = "application/json,charset=utf-8")
+    @RequestMapping(value = "/user", produces = "application/json;charset=utf-8")
     public ResponseEntity users() {
         List<User> users = userService.all();
         return new ResponseEntity(users, HttpStatus.OK);
