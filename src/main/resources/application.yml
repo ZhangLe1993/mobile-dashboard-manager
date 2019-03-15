@@ -1,5 +1,9 @@
-app_id: wx23b95852ed031837
-app_secret: b76a67cf5cb87001ebda7366942c420e
+#sunjian
+#app_id: wx23b95852ed031837
+#app_secret: b76a67cf5cb87001ebda7366942c420e
+#yangang.li
+app_id: wx112902cee8469942
+app_secret: 715990405ffaf5438581ba78cade5fc6
 
 spring:
   datasource:
@@ -13,6 +17,7 @@ spring:
       charset: UTF-8
       force: true
       enabled: true
+
 #Redis-info
 redis_host: 127.0.0.1
 redis_port: 6379
