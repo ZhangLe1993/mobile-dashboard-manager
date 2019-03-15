@@ -2,7 +2,6 @@ package com.aihuishou.bi.md.front.auth;
 
 import com.aihuishou.bi.md.front.auth.exception.InvalidActivationCodeException;
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
-import com.aihuishou.bi.md.front.auth.exception.UnknowEmployeeException;
 import com.aihuishou.bi.md.front.auth.exception.WeixinAuthFailException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -82,12 +81,7 @@ public class LoginC {
         if (StringUtils.isEmpty(openId)) {
             throw new InvalidSidException();
         }
-
         User user = userService.findByOpenId(openId);
-        if (user == null) {
-            throw new UnknowEmployeeException();
-        }
-
         if (user.getActive()) {
             return new ResponseEntity(HttpStatus.OK);
         }

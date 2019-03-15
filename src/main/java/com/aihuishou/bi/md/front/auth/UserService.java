@@ -1,6 +1,5 @@
 package com.aihuishou.bi.md.front.auth;
 
-import com.aihuishou.bi.md.front.auth.exception.UnknowEmployeeException;
 import com.aihuishou.bi.md.front.auth.exception.UserNotActivationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;

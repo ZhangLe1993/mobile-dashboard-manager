@@ -19,7 +19,6 @@
 package com.aihuishou.bi.md.front.auth;
 
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
-import com.aihuishou.bi.md.front.auth.exception.SidMissException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -63,7 +62,7 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
             }
             return userService.checkActive(openId);
         } else {
-            throw new SidMissException();
+            throw new InvalidSidException();
         }
     }
 }

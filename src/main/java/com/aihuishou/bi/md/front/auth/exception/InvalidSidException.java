@@ -5,6 +5,6 @@ package com.aihuishou.bi.md.front.auth.exception;
  */
 public class InvalidSidException extends AuthException {
     public InvalidSidException(){
-        super(4001,"无效的会话ID");
+        super(401,"invalid sid");
     }
 }
