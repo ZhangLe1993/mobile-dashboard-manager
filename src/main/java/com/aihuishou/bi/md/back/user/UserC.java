@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @Slf4j
@@ -21,8 +20,7 @@ public class UserC {
     private UserService userService;
 
     @RequestMapping(value = "/user", produces = "application/json;charset=utf-8")
-    public ResponseEntity users(HttpServletResponse response) {
-        response.setCharacterEncoding("UTF-8");
+    public ResponseEntity users() {
         List<User> users = userService.all();
         return new ResponseEntity(users, HttpStatus.OK);
     }
