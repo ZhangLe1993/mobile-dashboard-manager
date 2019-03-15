@@ -9,7 +9,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
   resources:
-    static-locations: classpath:/web/dist/
+    static-locations: classpath:/
 #Redis-info
 redis_host: 127.0.0.1
 redis_port: 6379
