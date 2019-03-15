@@ -1,6 +1,7 @@
 app_id: wx23b95852ed031837
 app_secret: b76a67cf5cb87001ebda7366942c420e
 
+
 spring:
   datasource:
     url: jdbc:mysql://10.81.44.187:3306/md?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
@@ -8,4 +9,6 @@ spring:
     password: root
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
+server:
+  port: 8081
 
