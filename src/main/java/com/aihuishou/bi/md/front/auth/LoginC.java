@@ -78,16 +78,20 @@ public class LoginC {
      * @return
      */
     @RequestMapping("/active")
-    public ResponseEntity active(@RequestParam("code") String activationCode,@RequestHeader(value = "sid") String sid) throws SQLException {
+    public ResponseEntity active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid") String sid) throws SQLException {
         String openId = sessionHelper.getOpenId(sid);
         if (StringUtils.isEmpty(openId)) {//校验用户SID会话
             throw new InvalidSidException();
         }
         User user = userService.findByActiveCode(activationCode);
-        if (user != null && userService.active(openId, activationCode)) {//激活码正确->绑定open_id、激活账户
-            return new ResponseEntity(HttpStatus.OK);
-        } else {//激活失败
+        if (user == null) {
+            log.warn("activate fail,user not found,openId:" + openId + " activationCode:" + activationCode);
             throw new ActivationFail();
+        } else if (userService.active(openId, activationCode)) {
+            log.warn("activate fail,openId:" + openId + " activationCode:" + activationCode);
+            throw new ActivationFail();
+        } else {
+            return new ResponseEntity(HttpStatus.OK);
         }
     }
 
