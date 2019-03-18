@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class LoginC {
     private UserService userService;
 
     @RequestMapping("/login")
-    public ResponseEntity login(@RequestParam("code") String code, @RequestHeader(value = "sid", required = false) String sid) throws IOException {
+    public void login(@RequestParam("code") String code, @RequestHeader(value = "sid", required = false) String sid, HttpServletResponse response) throws IOException {
         String openId = null;
         if (!StringUtils.isEmpty(sid)) {
             openId = sessionHelper.getOpenId(sid);
@@ -51,8 +52,9 @@ public class LoginC {
                 throw new WeixinAuthFailException();
             }
         }
+        response.setHeader("sid",sid);
         userService.checkActive(openId);//校验激活情况
-        return new ResponseEntity(sid, HttpStatus.OK);
+        response.setStatus(200);
     }
 
     private WxSessionResponse checkCode(String code) throws IOException {
