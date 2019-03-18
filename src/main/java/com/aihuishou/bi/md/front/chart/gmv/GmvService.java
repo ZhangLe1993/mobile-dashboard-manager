@@ -4,17 +4,20 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,6 +34,7 @@ public class GmvService {
         banGmvType.add("加盟店");
     }
 
+    @Cacheable("gmv/querySummary")
     public List<SummaryBean> querySummary() {
         try {
             //最近2日，上月同比日
@@ -42,9 +46,15 @@ public class GmvService {
             now.add(Calendar.DAY_OF_MONTH, 1);
             now.add(Calendar.MONTH, -1);
             Date monthContrast = new Date(now.getTime().getTime());//上月同日对比
-            Map<String, List<GmvDayData>> a = queryDetail(dataDate).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));//当前
-            Map<String, List<GmvDayData>> b = queryDetail(contrast).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));//上一日
-            Map<String, List<GmvDayData>> c = queryDetail(monthContrast).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));//上月同一天
+
+            FutureTask<Map<String, List<GmvDayData>>> aC = submitQuery(dataDate);
+            FutureTask<Map<String, List<GmvDayData>>> bC = submitQuery(contrast);
+            FutureTask<Map<String, List<GmvDayData>>> cC = submitQuery(monthContrast);
+
+            Map<String, List<GmvDayData>> a = aC.get();//当前
+            Map<String, List<GmvDayData>> b = bC.get();//上一日
+            Map<String, List<GmvDayData>> c = cC.get();//上月同一天
+
             List<SummaryBean> summaryList = a.keySet().stream().map(it -> {
                 SummaryBean summaryBean = new SummaryBean();
                 summaryBean.setLabel(it);
@@ -71,8 +81,12 @@ public class GmvService {
             return summaryList;
         } catch (SQLException e) {
             e.printStackTrace();
-            return new ArrayList<>();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
+        return new ArrayList<>();
     }
 
     private Date getLastDataDate() throws SQLException {
@@ -116,5 +130,13 @@ public class GmvService {
         cal.add(Calendar.MILLISECOND, -1);
         Date to = new Date(cal.getTime().getTime());
         return queryDetail(from, to);
+    }
+
+    private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate){
+        FutureTask<Map<String, List<GmvDayData>>> futureTask=new FutureTask(() -> {
+            return queryDetail(queryDate).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));
+        });
+        new Thread(futureTask).run();
+        return futureTask;
     }
 }

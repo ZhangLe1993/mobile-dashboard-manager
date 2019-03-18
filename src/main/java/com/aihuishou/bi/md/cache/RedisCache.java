@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
+import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.cache.support.SimpleValueWrapper;
 
 import java.io.IOException;
@@ -109,7 +110,11 @@ public class RedisCache implements Cache {
     private String getCacheKey(Object key) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return PREFIX_CACHE_KEY + name + "|" + mapper.writeValueAsString(key);
+            if(key instanceof SimpleKey){
+                return PREFIX_CACHE_KEY + name + "|" + mapper.writeValueAsString(((SimpleKey)key).toString());
+            }else{
+                return PREFIX_CACHE_KEY + name + "|" + mapper.writeValueAsString(key);
+            }
         } catch (JsonProcessingException e) {
             logger.error("",e);
             throw new RuntimeException(e);

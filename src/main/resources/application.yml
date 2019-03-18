@@ -17,6 +17,10 @@ spring:
       charset: UTF-8
       force: true
       enabled: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    db: 11
 
 #Redis-info
 redis_host: 127.0.0.1
