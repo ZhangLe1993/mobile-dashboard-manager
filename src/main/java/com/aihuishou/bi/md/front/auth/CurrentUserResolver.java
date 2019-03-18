@@ -49,7 +49,7 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.getParameterType().isAssignableFrom(User.class)
-                && parameter.hasParameterAnnotation(CurrentUser.class);
+                && parameter.hasParameterAnnotation(Sid.class);
     }
 
     @Override
