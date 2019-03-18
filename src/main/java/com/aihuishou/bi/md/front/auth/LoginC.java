@@ -87,7 +87,7 @@ public class LoginC {
         if (user == null) {
             log.warn("activate fail,user not found,openId:" + openId + " activationCode:" + activationCode);
             throw new ActivationFail();
-        } else if (userService.active(openId, activationCode)) {
+        } else if (!userService.active(openId, activationCode)) {
             log.warn("activate fail,openId:" + openId + " activationCode:" + activationCode);
             throw new ActivationFail();
         } else {
