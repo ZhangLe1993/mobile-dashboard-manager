@@ -7,7 +7,7 @@ class UserTable extends React.Component {
     constructor(pros) {
         super(pros);
         this.state = {
-            headers: ['ID', '用户名', '工号', '微信标识', '激活码', '是否已激活'],
+            headers: ['ID', '用户名', '工号', '微信标识', '激活码', '是否已激活','是否可用'],
             data: []
         }
     }
@@ -54,6 +54,9 @@ class UserTable extends React.Component {
                             </Table.Cell>
                             <Table.Cell textAlign='center'>
                                 <Checkbox toggle checked={row.active}/>
+                            </Table.Cell>
+                            <Table.Cell textAlign='center'>
+                                <Checkbox toggle checked={row.enable}/>
                             </Table.Cell>
                         </Table.Row>
                     )
