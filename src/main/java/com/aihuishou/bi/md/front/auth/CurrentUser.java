@@ -24,9 +24,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 自定义 当前用户会话 Sid 注解
+ * 自定义 当前用户会话 CurrentUser 注解
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Sid {
+public @interface CurrentUser {
 }

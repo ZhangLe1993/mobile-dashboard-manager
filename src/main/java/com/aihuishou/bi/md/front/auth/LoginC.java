@@ -78,7 +78,7 @@ public class LoginC {
      * @return
      */
     @RequestMapping("/active")
-    public ResponseEntity active(@RequestParam("code") String activationCode, @Sid String sid) throws SQLException {
+    public ResponseEntity active(@RequestParam("code") String activationCode,@RequestHeader(value = "sid") String sid) throws SQLException {
         String openId = sessionHelper.getOpenId(sid);
         if (StringUtils.isEmpty(openId)) {//校验用户SID会话
             throw new InvalidSidException();

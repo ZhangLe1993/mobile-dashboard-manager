@@ -1,6 +1,6 @@
 package com.aihuishou.bi.md.front.chart;
 
-import com.aihuishou.bi.md.front.auth.Sid;
+import com.aihuishou.bi.md.front.auth.CurrentUser;
 import com.aihuishou.bi.md.front.auth.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloC {
 
     @RequestMapping("/hello")
-    public ResponseEntity hello(@Sid User user){
+    public ResponseEntity hello(@CurrentUser User user){
         return new ResponseEntity("hello world "+user.getName(),HttpStatus.OK);
     }
 }
