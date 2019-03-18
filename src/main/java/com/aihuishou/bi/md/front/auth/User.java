@@ -10,4 +10,5 @@ public class User {
     private String employeeNo;//员工号
     private Boolean active=false;//是否已激活
     private String activationCode;//激活码
+    private Boolean enable=true;//是否可用
 }

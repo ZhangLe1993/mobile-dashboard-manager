@@ -1,6 +1,6 @@
 package com.aihuishou.bi.md.front.auth;
 
-import com.aihuishou.bi.md.front.auth.exception.InvalidActivationCodeException;
+import com.aihuishou.bi.md.front.auth.exception.ActivationFail;
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
 import com.aihuishou.bi.md.front.auth.exception.WeixinAuthFailException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,7 +52,7 @@ public class LoginC {
                 throw new WeixinAuthFailException();
             }
         }
-        response.setHeader("sid",sid);
+        response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
         response.setStatus(200);
     }
@@ -72,7 +72,7 @@ public class LoginC {
     }
 
     /**
-     * 已登录用户进行激活处理
+     * 用户进行激活处理
      *
      * @param activationCode
      * @return
@@ -80,19 +80,14 @@ public class LoginC {
     @RequestMapping("/active")
     public ResponseEntity active(@RequestParam("code") String activationCode, @RequestHeader("sid") String sid) throws SQLException {
         String openId = sessionHelper.getOpenId(sid);
-        if (StringUtils.isEmpty(openId)) {
+        if (StringUtils.isEmpty(openId)) {//校验用户SID会话
             throw new InvalidSidException();
         }
-        User user = userService.findByOpenId(openId);
-        if (user.getActive()) {
+        User user = userService.findByActiveCode(activationCode);
+        if (user != null && userService.active(openId, activationCode)) {//激活码正确->绑定open_id、激活账户
             return new ResponseEntity(HttpStatus.OK);
-        }
-
-        if (activationCode.equals(user.getActivationCode())) {//激活码正确
-            user.setActive(true);//设置为激活状态
-            return new ResponseEntity(HttpStatus.OK);
-        } else {
-            throw new InvalidActivationCodeException();
+        } else {//激活失败
+            throw new ActivationFail();
         }
     }
 
