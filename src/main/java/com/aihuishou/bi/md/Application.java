@@ -3,6 +3,7 @@ package com.aihuishou.bi.md;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -20,6 +21,7 @@ import javax.servlet.ServletException;
 @SpringBootApplication
 @ComponentScan("com.aihuishou")
 @EnableCaching
+@EnableAutoConfiguration
 public class Application extends SpringBootServletInitializer {
 
     public static ApplicationContext ctx;

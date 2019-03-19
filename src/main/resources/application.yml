@@ -12,6 +12,12 @@ spring:
     password: 852456
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
+  gp-datasource:
+    url: jdbc:postgresql://gp-bp1j7sa3410948756.gpdb.rds.aliyuncs.com:3432/warehouse
+    username: report
+    password: L00easy_report_7365
+    driver-class-name: org.postgresql.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
   http:
     encoding:
       charset: UTF-8
@@ -26,9 +32,3 @@ spring:
 redis_host: 127.0.0.1
 redis_port: 6379
 redis_db: 11
-
-gp:
-  url: jdbc:postgresql://gp-bp1j7sa3410948756.gpdb.rds.aliyuncs.com:3432/warehouse
-  username: report
-  password: L00easy_report_7365
-  driver-class-name: org.postgresql.Driver
