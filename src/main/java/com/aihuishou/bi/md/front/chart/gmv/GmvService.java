@@ -107,7 +107,7 @@ public class GmvService {
     }
 
 
-    public List<GmvDayData> queryDetail(Date from, Date to) throws SQLException {
+    public List<GmvDayData> queryDetail(Date from, Date to, String gmvType) {
         String sql = "select t1.report_date as reportDate,\n" +
                 "         t1.gmv_type as gmvType,\n" +
                 "         case when gmv_type='海外' then  t1.settle_amount_num_day*t2.exchange_rate \n" +
@@ -118,23 +118,29 @@ public class GmvService {
                 "from rpt.rpt_b2b_gmv_day t1\n" +
                 "join dim.dim_exchange_rate  t2 on t1.report_date =t2.report_date\n" +
                 "left join dim.dim_b2b_gmv_target_month t3 on substr(t1.report_date,1,7)=t3.month and t1.gmv_type=t3.business_unit\n" +
-                "where t1.report_date between ? and ?";
-        List<GmvDayData> arr = new QueryRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), from, to);
-        return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
+                "where t1.report_date between ? and ?" + (gmvType != null ? " and t1.gmv_type=? " : "");
+        Object[] params = gmvType == null ? new Object[]{from, to} : new Object[]{from, to, gmvType};
+        try {
+            List<GmvDayData> arr = new QueryRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
+            return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 
     public List<GmvDayData> queryDetail(Date day) throws SQLException {
         Calendar cal = Calendar.getInstance();
         cal.setTime(day);
-        cal.clear(Calendar.HOUR_OF_DAY);
-        cal.clear(Calendar.MINUTE);
-        cal.clear(Calendar.SECOND);
-        cal.clear(Calendar.MILLISECOND);
+        cal.set(Calendar.HOUR_OF_DAY,0);
+        cal.set(Calendar.MINUTE,0);
+        cal.set(Calendar.SECOND,0);
+        cal.set(Calendar.MILLISECOND,0);
         Date from = new Date(cal.getTime().getTime());
         cal.add(Calendar.DAY_OF_MONTH, 1);
         cal.add(Calendar.MILLISECOND, -1);
         Date to = new Date(cal.getTime().getTime());
-        return queryDetail(from, to);
+        return queryDetail(from, to, null);
     }
 
     private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate) {
