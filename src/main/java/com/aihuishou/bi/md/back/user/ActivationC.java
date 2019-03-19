@@ -54,8 +54,4 @@ public class ActivationC {
         ImageWrite.writeToStream(bitMatrix, "jpg", response.getOutputStream());
     }
 
-    @RequestMapping("/disable/{uid}")
-    public void disable(@PathVariable("uid")Long uid) throws SQLException {
-        userService.updateActive(uid,false);
-    }
 }

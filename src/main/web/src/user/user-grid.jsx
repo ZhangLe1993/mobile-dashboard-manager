@@ -1,7 +1,8 @@
 import React from 'react'
 import {Header, Table, Checkbox} from 'semantic-ui-react'
 import axios from 'axios'
-import ActBtn from './activation-code.jsx'
+import ActBtn from './activation-code.jsx';
+import BanUserToggle from './ban-user.jsx';
 
 class UserTable extends React.Component {
     constructor(pros) {
@@ -9,6 +10,9 @@ class UserTable extends React.Component {
         this.state = {
             headers: ['ID', '用户名', '工号', '微信标识', '激活码', '是否已激活','是否可用'],
             data: []
+        };
+        this.banUser=function () {
+
         }
     }
 
@@ -50,13 +54,13 @@ class UserTable extends React.Component {
                                 {row.openId}
                             </Table.Cell>
                             <Table.Cell textAlign='center'>
-                                <ActBtn code={row.activationCode} uid={row.id}/>
+                                <ActBtn code={row.activationCode} uid={row.id} enable={row.enable} />
                             </Table.Cell>
                             <Table.Cell textAlign='center'>
                                 <Checkbox toggle checked={row.active}/>
                             </Table.Cell>
                             <Table.Cell textAlign='center'>
-                                <Checkbox toggle checked={row.enable}/>
+                                <BanUserToggle uid={row.id} />
                             </Table.Cell>
                         </Table.Row>
                     )

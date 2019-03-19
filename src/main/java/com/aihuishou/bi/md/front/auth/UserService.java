@@ -54,7 +54,7 @@ public class UserService {
         new QueryRunner(dataSource).update(sql, code, uid);
     }
 
-    public void updateActive(Long uid, boolean enable) throws SQLException {
+    public void updateEnable(Long uid, boolean enable) throws SQLException {
         String sql = "update user set enable=? where id=?";
         new QueryRunner(dataSource).update(sql, enable, uid);
     }
