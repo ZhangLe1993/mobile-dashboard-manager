@@ -79,8 +79,6 @@ public class GmvService {
             });
             summaryList.add(0, sum);
             return summaryList;
-        } catch (SQLException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -89,16 +87,23 @@ public class GmvService {
         return new ArrayList<>();
     }
 
-    private Date getLastDataDate() throws SQLException {
+    @Cacheable("summary/getLastDataDate")
+    public Date getLastDataDate() {
         String sql = "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
-        Date dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {
-            @Override
-            public Date handle(ResultSet resultSet) throws SQLException {
-                resultSet.next();
-                return resultSet.getDate("report_date");
-            }
-        });
-        return dataDate;
+        Date dataDate = null;
+        try {
+            dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {
+                @Override
+                public Date handle(ResultSet resultSet) throws SQLException {
+                    resultSet.next();
+                    return resultSet.getDate("report_date");
+                }
+            });
+            return dataDate;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -132,8 +137,8 @@ public class GmvService {
         return queryDetail(from, to);
     }
 
-    private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate){
-        FutureTask<Map<String, List<GmvDayData>>> futureTask=new FutureTask(() -> {
+    private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate) {
+        FutureTask<Map<String, List<GmvDayData>>> futureTask = new FutureTask(() -> {
             return queryDetail(queryDate).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));
         });
         new Thread(futureTask).run();
