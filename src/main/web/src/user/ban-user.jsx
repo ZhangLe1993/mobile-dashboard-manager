@@ -13,9 +13,7 @@ class BanUserToggle extends React.Component {
                 enable: flag
             }
         };
-        Axios.get("/back/user/ban", data).then(() => {
-            this.setState({enable: flag});
-        });
+        Axios.get("/back/user/ban", data);
     };
 
     render() {
