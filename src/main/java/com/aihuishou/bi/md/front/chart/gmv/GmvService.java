@@ -1,8 +1,10 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -14,12 +16,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class GmvService {
 
@@ -27,12 +31,15 @@ public class GmvService {
     @Qualifier("gp")
     private DataSource gp;
 
+    @Resource
+    private DataSource mysql;
     //要ban掉的gmv 类型
     private List<String> banGmvType = new ArrayList<>();
 
     {
         banGmvType.add("加盟店");
     }
+
 
     @Cacheable("gmv/querySummary")
     public List<SummaryBean> querySummary() {
@@ -55,20 +62,29 @@ public class GmvService {
             Map<String, List<GmvDayData>> b = bC.get();//上一日
             Map<String, List<GmvDayData>> c = cC.get();//上月同一天
 
-            List<SummaryBean> summaryList = a.keySet().stream().map(it -> {
-                SummaryBean summaryBean = new SummaryBean();
-                summaryBean.setLabel(it);
-                summaryBean.setValue(a.get(it).get(0).getAmountDay());
-                summaryBean.setMonthTarget(a.get(it).get(0).getTarget());
-                summaryBean.setMonthAccumulation(a.get(it).get(0).getAmountToNow());
-                if (b.get(it) != null) summaryBean.setValueContrast(b.get(it).get(0).getAmountDay());
-                if (c.get(it) != null) summaryBean.setMonthAccumulationContrast(c.get(it).get(0).getAmountToNow());
-                return summaryBean;
-            }).collect(Collectors.toList());
+
+            Map<String, String> icon = getIcons();
+            List labels = new ArrayList(icon.keySet());
+
+            List<SummaryBean> summaryList = a.keySet().stream()
+                    .filter(it -> labels.contains(it))
+                    .sorted((c1, c2) -> labels.indexOf(c1) - labels.indexOf(c2))
+                    .map(it -> {
+                        SummaryBean summaryBean = new SummaryBean();
+                        summaryBean.setLabel(it);
+                        summaryBean.setIcon(icon.get(it));
+                        summaryBean.setValue(a.get(it).get(0).getAmountDay());
+                        summaryBean.setMonthTarget(a.get(it).get(0).getTarget());
+                        summaryBean.setMonthAccumulation(a.get(it).get(0).getAmountToNow());
+                        if (b.get(it) != null) summaryBean.setValueContrast(b.get(it).get(0).getAmountDay());
+                        if (c.get(it) != null)
+                            summaryBean.setMonthAccumulationContrast(c.get(it).get(0).getAmountToNow());
+                        return summaryBean;
+                    }).collect(Collectors.toList());
             //sum
             SummaryBean sum = new SummaryBean();
             sum.setLabel("GMV");
-            sum.setIcon("");
+            sum.setIcon(icon.get("GMV"));
             summaryList.stream().reduce(sum, (a1, a2) -> {
                 a1.setValue(a1.getValue() + a2.getValue());
                 a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
@@ -80,11 +96,30 @@ public class GmvService {
             summaryList.add(0, sum);
             return summaryList;
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("",e);
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            log.error("",e);
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * @return gmv_type->icon
+     */
+    private Map<String, String> getIcons() {
+        Map<String, String> icons=new LinkedHashMap<>();
+        String sql = "select gmv_type,gmv_icon from gmv_type_config order by order_no";
+        try {
+            List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
+            for (Map<String, Object> r : rs) {
+                String gmvType = r.get("gmv_type").toString();
+                String gmvIcon = r.get("gmv_icon").toString();
+                icons.put(gmvType,gmvIcon);
+            }
+        } catch (SQLException e) {
+            log.error("",e);
+        }
+        return icons;
     }
 
     @Cacheable("summary/getLastDataDate")
@@ -101,7 +136,7 @@ public class GmvService {
             });
             return dataDate;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("",e);
             return null;
         }
     }
@@ -124,7 +159,7 @@ public class GmvService {
             List<GmvDayData> arr = new QueryRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
             return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("",e);
             return new ArrayList<>();
         }
     }
@@ -132,10 +167,10 @@ public class GmvService {
     public List<GmvDayData> queryDetail(Date day) throws SQLException {
         Calendar cal = Calendar.getInstance();
         cal.setTime(day);
-        cal.set(Calendar.HOUR_OF_DAY,0);
-        cal.set(Calendar.MINUTE,0);
-        cal.set(Calendar.SECOND,0);
-        cal.set(Calendar.MILLISECOND,0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         Date from = new Date(cal.getTime().getTime());
         cal.add(Calendar.DAY_OF_MONTH, 1);
         cal.add(Calendar.MILLISECOND, -1);

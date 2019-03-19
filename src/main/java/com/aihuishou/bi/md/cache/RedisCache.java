@@ -18,7 +18,7 @@ public class RedisCache implements Cache {
 
     private Logger logger = LoggerFactory.getLogger(RedisCache.class);
 
-    private static final String PREFIX_CACHE_KEY = "argus_cache_";
+    public static final String PREFIX_CACHE_KEY = "md_cache_";
     private static final Long EXPIRE_SECOND = 60 * 60L;//缓存失效时间 默认1h
     private String name;
 
