@@ -67,6 +67,9 @@ public class GmvC {
         line.getSeries().add(s1);
         LineChartData.Series s2 = getFullMonthDateData(b, data);
         s2.setName("上月" + gmvType);
+        if(s2.getData().size()>s1.getData().size()){
+            s2.setData(s2.getData().subList(0,s1.getData().size()));
+        }
         line.getSeries().add(s2);
         return new ResponseEntity(lineCharts, HttpStatus.OK);
     }
