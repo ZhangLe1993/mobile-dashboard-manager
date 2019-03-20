@@ -1,11 +1,10 @@
 import React from 'react'
-import {Checkbox} from 'semantic-ui-react'
+import {Switch} from 'semantic-ui-react'
 import Axios from 'axios'
 
 class BanUserToggle extends React.Component {
     state = {enable: this.props.enable};
-    banUser = () => {
-        let flag = !this.state.enable;
+    banUser = (flag) => {
         let uid = this.props.uid;
         let data = {
             params: {
@@ -18,7 +17,7 @@ class BanUserToggle extends React.Component {
 
     render() {
         return (
-            <Checkbox toggle checked={this.state.enable} onChange={this.banUser()}/>
+            <Switch checked={this.state.enable} onChange={this.banUser()}/>
         );
     }
 }
