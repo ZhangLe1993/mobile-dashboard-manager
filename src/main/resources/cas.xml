@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+        http://www.springframework.org/schema/security  http://www.springframework.org/schema/security/spring-security.xsd"
+       default-lazy-init="true">
+
+    <!-- spring CAS -->
+    <security:http entry-point-ref="casEntryPoint">
+        <security:csrf disabled="true"/>
+        <security:headers>
+            <security:frame-options disabled="true"/>
+        </security:headers>
+        <security:intercept-url pattern="/**/*.js" access="permitAll()"/>
+        <security:intercept-url pattern="/**/*.css" access="permitAll()"/>
+        <security:intercept-url pattern="/**/*.jpg" access="permitAll()"/>
+        <security:intercept-url pattern="/**/*.png" access="permitAll()"/>
+        <security:intercept-url pattern="/**/*.woff2" access="permitAll()"/>
+        <security:intercept-url pattern="/**/*.ico" access="permitAll()"/>
+        <security:intercept-url pattern="/back/**" access="hasRole('ROLE_BACK')"/>
+        <security:custom-filter position="CAS_FILTER" ref="casFilter"/>
+    </security:http>
+
+    <bean id="casEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+        <property name="loginUrl" value="${cas.server.login}"/>
+        <property name="serviceProperties" ref="serviceProperties"/>
+    </bean>
+
+    <bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+        <property name="authenticationManager" ref="authenticationManager"/>
+    </bean>
+
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider ref="sidAuthProvider"/>
+        <security:authentication-provider ref="casAuthenticationProvider"/>
+    </security:authentication-manager>
+
+    <bean id="sidAuthProvider" class="com.aihuishou.bi.md.front.auth.SidAuthProvider">
+
+    </bean>
+
+    <bean id="casAuthenticationProvider"
+          class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+        <property name="authenticationUserDetailsService">
+            <bean class="com.aihuishou.bi.md.cas.CasAssertionUserDetailsServiceLoad">
+            </bean>
+        </property>
+        <property name="serviceProperties" ref="serviceProperties"/>
+        <property name="ticketValidator">
+            <bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+                <constructor-arg index="0" value="${cas.server.host}"/>
+            </bean>
+        </property>
+        <property name="key" value="an_id_for_this_auth_provider_only"/>
+    </bean>
+
+    <bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
+        <property name="service" value="${cas.client.host}/j_spring_cas_security_check"/>
+        <property name="sendRenew" value="false"/>
+    </bean>
+    <!-- spring CAS end-->
+
+</beans>

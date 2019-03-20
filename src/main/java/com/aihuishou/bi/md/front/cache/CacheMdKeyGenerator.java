@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.concurrent.Callable;
 
 @Component("md-key-generator")
 public class CacheMdKeyGenerator implements KeyGenerator {
@@ -20,6 +21,14 @@ public class CacheMdKeyGenerator implements KeyGenerator {
             key.append(v.toString());
             key.append("|");
         }
+
+        new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return method.invoke(o,objects);
+            }
+        };
+
         return key.toString();
     }
 }

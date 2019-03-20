@@ -10,7 +10,9 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -22,6 +24,8 @@ import javax.servlet.ServletException;
 @ComponentScan("com.aihuishou")
 @EnableCaching
 @EnableAutoConfiguration
+@ImportResource("classpath:cas.xml")
+@EnableWebSecurity
 public class Application extends SpringBootServletInitializer {
 
     public static ApplicationContext ctx;
