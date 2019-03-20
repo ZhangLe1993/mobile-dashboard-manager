@@ -1,12 +1,12 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import com.aihuishou.bi.md.front.cache.CacheMd;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -41,7 +41,7 @@ public class GmvService {
     }
 
 
-    @Cacheable("gmv/querySummary")
+    @CacheMd
     public List<SummaryBean> querySummary() {
         try {
             //最近2日，上月同比日
@@ -122,7 +122,7 @@ public class GmvService {
         return icons;
     }
 
-    @Cacheable("summary/getLastDataDate")
+    @CacheMd
     public Date getLastDataDate() {
         String sql = "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
         Date dataDate = null;
@@ -141,7 +141,7 @@ public class GmvService {
         }
     }
 
-//    @Cacheable("gmv/query-detail")
+    @CacheMd
     public List<GmvDayData> queryDetail(Date from, Date to, String gmvType) {
         String sql = "select t1.report_date as reportDate,\n" +
                 "         t1.gmv_type as gmvType,\n" +

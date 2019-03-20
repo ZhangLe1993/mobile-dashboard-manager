@@ -1,6 +1,8 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
-public class SummaryBean {
+import java.io.Serializable;
+
+public class SummaryBean implements Serializable {
     private Long value=0L;//当前值
     private Long valueContrast=0L;//对比值
     private String icon="";//图标

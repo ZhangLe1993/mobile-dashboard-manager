@@ -1,6 +1,8 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
-public class GmvDayData {
+import java.io.Serializable;
+
+public class GmvDayData implements Serializable {
     private String reportDate;
     private String gmvType;
     private Long amountDay=0L;//当日值

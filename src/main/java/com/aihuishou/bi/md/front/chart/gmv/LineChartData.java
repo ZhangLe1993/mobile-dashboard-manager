@@ -1,9 +1,10 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LineChartData {
+public class LineChartData implements Serializable {
     private String title = "";
     private List<String> xAxis = new ArrayList<>();
     private List<Series> series = new ArrayList();

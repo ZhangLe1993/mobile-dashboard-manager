@@ -3,11 +3,10 @@ spring:
     url: jdbc:mysql://10.81.44.187:3306/md?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
     username: root
     password: root
+  redis:
+    host: 10.81.44.187
+    db: 1
+    password: 123456
 
 server:
   port: 8081
-
-redis_host: 10.81.44.187
-redis_port: 6379
-redis_db: 1
-redis_pw: 123456
