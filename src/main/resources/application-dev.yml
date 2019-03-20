@@ -10,3 +10,7 @@ spring:
 
 server:
   port: 8081
+
+cas:
+   client:
+     host: http://10.46.231.42:8081
