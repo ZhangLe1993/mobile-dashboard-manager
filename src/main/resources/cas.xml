@@ -40,13 +40,9 @@
     </bean>
 
     <security:authentication-manager alias="authenticationManager">
-        <security:authentication-provider ref="sidAuthProvider"/>
         <security:authentication-provider ref="casAuthenticationProvider"/>
     </security:authentication-manager>
 
-    <bean id="sidAuthProvider" class="com.aihuishou.bi.md.front.auth.SidAuthProvider">
-
-    </bean>
 
     <bean id="casAuthenticationProvider"
           class="org.springframework.security.cas.authentication.CasAuthenticationProvider">

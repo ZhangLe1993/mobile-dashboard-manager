@@ -13,4 +13,4 @@ server:
 
 cas:
    client:
-     host: http://10.46.231.42:8081/back/index.html
+     host: http://10.46.231.42:8081

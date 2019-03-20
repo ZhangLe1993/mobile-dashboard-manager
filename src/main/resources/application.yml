@@ -38,4 +38,4 @@ cas:
     login: http://sso.ob.aihuishou.com:8080/casservice/login
     logout: http://sso.ob.aihuishou.com:8080/casservice/logout?service=http://aba.aihuishou.com:8080
   client:
-    host: http://127.0.0.1:8080/back/index.html
+    host: http://127.0.0.1:8080
