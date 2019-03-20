@@ -50,7 +50,7 @@ public class UserService {
     }
 
     public void updateActivationCode(Long uid, String code) throws SQLException {
-        String sql = "update user set activation_code=? and active=0 where id=?";
+        String sql = "update user set activation_code=? where id=?";
         new QueryRunner(dataSource).update(sql, code, uid);
     }
 
