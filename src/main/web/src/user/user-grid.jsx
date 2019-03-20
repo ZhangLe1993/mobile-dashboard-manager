@@ -22,9 +22,11 @@ class UserTable extends React.Component {
     render() {
         let header = () => {
             let arr = [];
+            let i=0;
             for (let hn of this.state.headers) {
                 if (hn) {
-                    arr.push(<Table.HeaderCell textAlign='center'>{hn}</Table.HeaderCell>)
+                    arr.push(<Table.HeaderCell key={i} textAlign='center'>{hn}</Table.HeaderCell>);
+                    i++;
                 }
             }
             return arr;
@@ -32,10 +34,11 @@ class UserTable extends React.Component {
 
         let row = () => {
             let arr = [];
+            let i=0;
             for (let row of this.state.data) {
                 if (row) {
                     arr.push(
-                        <Table.Row>
+                        <Table.Row key={i++}>
                             <Table.Cell>
                                 <Header as='h2' textAlign='center'>
                                     {row.id}
@@ -57,7 +60,7 @@ class UserTable extends React.Component {
                                 <Checkbox toggle checked={row.active}/>
                             </Table.Cell>
                             <Table.Cell textAlign='center'>
-                                <BanUserToggle uid={row.id} />
+                                <BanUserToggle uid={row.id} enable={row.enable}/>
                             </Table.Cell>
                         </Table.Row>
                     )

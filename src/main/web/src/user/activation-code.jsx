@@ -46,7 +46,7 @@ class ActivationButton extends React.Component {
                 }}>
                     <Modal.Header>激活码（激活成功后立即失效）</Modal.Header>
                     <Modal.Content>
-                        <Image fluid centered wrapped size='medium' src={this.state.activationImg}/>
+                        <Image centered wrapped size='medium' src={this.state.activationImg}/>
                     </Modal.Content>
                 </Modal>
             </div>
