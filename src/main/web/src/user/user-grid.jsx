@@ -11,9 +11,6 @@ class UserTable extends React.Component {
             headers: ['ID', '用户名', '工号', '微信标识', '激活码', '是否已激活','是否可用'],
             data: []
         };
-        this.banUser=function () {
-
-        }
     }
 
     componentDidMount() {

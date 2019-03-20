@@ -141,7 +141,7 @@ public class GmvService {
         }
     }
 
-    @Cacheable("gmv/query-detail")
+//    @Cacheable("gmv/query-detail")
     public List<GmvDayData> queryDetail(Date from, Date to, String gmvType) {
         String sql = "select t1.report_date as reportDate,\n" +
                 "         t1.gmv_type as gmvType,\n" +

@@ -17,7 +17,7 @@ class BanUserToggle extends React.Component {
 
     render() {
         return (
-            <Switch checked={this.state.enable} onChange={this.banUser()}/>
+            <Switch checked={this.state.enable}/>
         );
     }
 }
