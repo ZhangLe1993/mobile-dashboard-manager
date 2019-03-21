@@ -16,9 +16,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
@@ -120,6 +122,12 @@ public class GmvService {
             log.error("",e);
         }
         return icons;
+    }
+
+    public Set<String> allGmvType(){
+        Set<String> allTypes = getIcons().keySet();
+        allTypes.removeAll(banGmvType);
+        return new HashSet(allTypes);
     }
 
     @CacheMd

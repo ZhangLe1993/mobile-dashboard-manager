@@ -47,18 +47,35 @@ public class GmvC {
         lineCharts.add(line);
 
         Date now = gmvService.getLastDataDate();//当前最新数据日期
-        Calendar cal=Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
         cal.setTime(now);
-        cal.set(Calendar.DAY_OF_MONTH,1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
 
-        cal.add(Calendar.MONTH,-1);//TODO
+        cal.add(Calendar.MONTH, -1);//TODO
 
         Date b = new Date(cal.getTime().getTime() - 1);//上月末
         cal.add(Calendar.MONTH, -1);
         Date a = new Date(cal.getTime().getTime());//上月初
 
         //上月初至今的数据
-        List<GmvDayData> data = gmvService.queryDetail(a, now, gmvType);
+        List<GmvDayData> data;
+        if ("gmv".equalsIgnoreCase(gmvType)) {
+            data = gmvService.allGmvType().parallelStream().flatMap(t -> {
+                return gmvService.queryDetail(a, now, t).stream();
+            }).collect(Collectors.groupingBy(it -> it.getReportDate()))
+                    .entrySet().stream()
+                    .map(it -> {
+                        GmvDayData v = new GmvDayData();
+                        v.setReportDate(it.getKey());
+                        v.setGmvType("GMV");
+                        return it.getValue().stream().reduce(v, (a1, a2) -> {
+                            a1.setAmountDay(a1.getAmountDay() + a2.getAmountDay());//后续只会用到amountDay
+                            return a1;
+                        });
+                    }).collect(Collectors.toList());
+        } else {
+            data = gmvService.queryDetail(a, now, gmvType);
+        }
 
         List<String> xArr = getFullMonthDate(now);
         line.setxAxis(xArr);//本月设X轴
@@ -67,8 +84,8 @@ public class GmvC {
         line.getSeries().add(s1);
         LineChartData.Series s2 = getFullMonthDateData(b, data);
         s2.setName("上月" + gmvType);
-        if(s2.getData().size()>s1.getData().size()){
-            s2.setData(s2.getData().subList(0,s1.getData().size()));
+        if (s2.getData().size() > s1.getData().size()) {
+            s2.setData(s2.getData().subList(0, s1.getData().size()));
         }
         line.getSeries().add(s2);
         return new ResponseEntity(lineCharts, HttpStatus.OK);
@@ -88,9 +105,9 @@ public class GmvC {
         });
         List<Object> d = xArr.stream().map(it -> {
             Object v = points.get(it);
-            return v==null?0:v;
+            return v == null ? 0 : v;
         }).collect(Collectors.toList());
-        LineChartData.Series series=new LineChartData.Series();
+        LineChartData.Series series = new LineChartData.Series();
         series.setData(d);
         return series;
     }
@@ -100,10 +117,10 @@ public class GmvC {
         SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
         Calendar cal = Calendar.getInstance();
         cal.setTime(end);
-        cal.set(Calendar.DAY_OF_MONTH,1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
         while (!(cal.getTime().getTime() > end.getTime())) {//不超过截止时间
             arr.add(dayFormat.format(cal.getTime()));
-            cal.add(Calendar.DATE,1);
+            cal.add(Calendar.DATE, 1);
         }
         return arr;
     }
