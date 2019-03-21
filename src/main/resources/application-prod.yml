@@ -4,9 +4,8 @@ spring:
     username: root
     password: root
   redis:
-    host: 10.81.44.187
-    db: 1
-    password: 123456
+    host: r-bp1df75eafff5994.redis.rds.aliyuncs.com
+    db: 14
 
 server:
   port: 8080
