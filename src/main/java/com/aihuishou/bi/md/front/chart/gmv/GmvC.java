@@ -50,6 +50,9 @@ public class GmvC {
         Calendar cal=Calendar.getInstance();
         cal.setTime(now);
         cal.set(Calendar.DAY_OF_MONTH,1);
+
+        cal.add(Calendar.MONTH,-1);//TODO
+
         Date b = new Date(cal.getTime().getTime() - 1);//上月末
         cal.add(Calendar.MONTH, -1);
         Date a = new Date(cal.getTime().getTime());//上月初

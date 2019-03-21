@@ -51,7 +51,7 @@ public class GmvService {
             now.add(Calendar.DAY_OF_MONTH, -1);
             Date contrast = new Date(now.getTime().getTime());//最新数据日期 上一日
             now.add(Calendar.DAY_OF_MONTH, 1);
-            now.add(Calendar.MONTH, -1);
+            now.add(Calendar.MONTH, -2);//TODO
             Date monthContrast = new Date(now.getTime().getTime());//上月同日对比
 
             FutureTask<Map<String, List<GmvDayData>>> aC = submitQuery(dataDate);
