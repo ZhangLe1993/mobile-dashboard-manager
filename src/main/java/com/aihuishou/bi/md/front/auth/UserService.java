@@ -22,20 +22,27 @@ public class UserService {
 
     public User findByActiveCode(String activeCode) throws SQLException {
         String sql = "select id,name,employee_no as employeeNo,open_id as openId," +
-                "active,activation_code as activationCode,enable from user where activation_code=?";
+                "active,activation_code as activationCode,enable,is_admin as isAdmin from user where activation_code=?";
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), activeCode);
     }
 
     public User findByOpenId(String openId) throws SQLException {
         String sql = "select id,name,employee_no as employeeNo,open_id as openId," +
-                "active,activation_code as activationCode,enable from user where open_id=?";
+                "active,activation_code as activationCode,enable,is_admin as isAdmin from user where open_id=?";
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), openId);
     }
 
     public User findById(Long id) throws SQLException {
         String sql = "select id,name,employee_no as employeeNo,open_id as openId," +
-                "active,activation_code as activationCode,enable from user where id=?";
+                "active,activation_code as activationCode,enable,is_admin as isAdmin from user where id=?";
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), id);
+    }
+
+    public User findByObId(String obId) throws SQLException {
+        String sql = "select a.id,a.name,a.employee_no as employeeNo,a.open_id as openId," +
+                "a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin from user a " +
+                "join dim_observer_account b on a.employee_no=b.observer_account_employee_no where b.observer_account_id=?";
+        return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), Integer.parseInt(obId));
     }
 
     public List<User> all() {

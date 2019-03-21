@@ -11,4 +11,5 @@ public class User {
     private Boolean active=false;//是否已激活
     private String activationCode;//激活码
     private Boolean enable=true;//是否可用
+    private Boolean isAdmin=false;
 }
