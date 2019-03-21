@@ -151,14 +151,11 @@ public class GmvService {
     public List<GmvDayData> queryDetail(Date from, Date to, String gmvType) {
         String sql = "select t1.report_date as reportDate,\n" +
                 "         t1.gmv_type as gmvType,\n" +
-                "         case when gmv_type='海外' then  t1.settle_amount_num_day*t2.exchange_rate \n" +
-                "           else t1.settle_amount_num_day end  as amountDay,\n" +
-                "     case when gmv_type='海外' then  t1.settle_amount_num_to_now*t2.exchange_rate \n" +
-                "           else t1.settle_amount_num_to_now end as amountToNow,\n" +
+                "         t1.settle_amount_num_day   as amountDay,\n" +
+                "    \t t1.settle_amount_num_to_now  as amountToNow,\n" +
                 "         t3.gmv_target as target\n" +
                 "from rpt.rpt_b2b_gmv_day t1\n" +
-                "join dim.dim_exchange_rate  t2 on t1.report_date =t2.report_date\n" +
-                "left join dim.dim_b2b_gmv_target_month t3 on substr(t1.report_date,1,7)=t3.month and t1.gmv_type=t3.business_unit\n" +
+                "left join dim.dim_b2b_gmv_target_month t3 on substr(t1.report_date,1,7)=t3.month and t1.gmv_type=t3.business_unit " +
                 "where t1.report_date between ? and ?" + (gmvType != null ? " and t1.gmv_type=? " : "");
         Object[] params = gmvType == null ? new Object[]{from, to} : new Object[]{from, to, gmvType};
         try {
