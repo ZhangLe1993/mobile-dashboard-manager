@@ -20,9 +20,10 @@ public class CasAssertionUserDetailsServiceLoad extends AbstractCasAssertionUser
             if(!user.findByObId(p.getName()).getIsAdmin()){//非admin用户不能通过单点登录
                 return null;
             }
+            return new UserDetailsObj(p.getName(), attr.get("name").toString(), attr.get("email").toString());
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return new UserDetailsObj(p.getName(), attr.get("name").toString(), attr.get("email").toString());
+        return null;
     }
 }
