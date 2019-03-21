@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class SessionHelper {
 
 
-    @CachePut(key = "#sid")//TODO 缓存需要失效时间，最好缓存在redis里
+    @CachePut(key = "#sid")
     public String bindSid(String sid, String openId) {
         return openId;
     }
@@ -19,4 +19,5 @@ public class SessionHelper {
     public String getOpenId(String sid) {
         return null;
     }
+
 }
