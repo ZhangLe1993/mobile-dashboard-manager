@@ -134,7 +134,13 @@ public class GmvService {
                     return resultSet.getDate("report_date");
                 }
             });
-            return dataDate;
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(dataDate);
+            cal.set(Calendar.HOUR_OF_DAY,0);
+            cal.set(Calendar.MINUTE,0);
+            cal.set(Calendar.SECOND,0);
+            cal.set(Calendar.MILLISECOND,0);
+            return new Date(cal.getTime().getTime());
         } catch (SQLException e) {
             log.error("",e);
             return null;
@@ -163,6 +169,7 @@ public class GmvService {
             return new ArrayList<>();
         }
     }
+
 
     public List<GmvDayData> queryDetail(Date day) throws SQLException {
         Calendar cal = Calendar.getInstance();

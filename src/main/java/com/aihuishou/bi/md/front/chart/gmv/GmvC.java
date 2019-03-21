@@ -31,6 +31,7 @@ public class GmvC {
         cal.setTime(lastDataDate);
         double monthProgress = (double) cal.get(Calendar.DAY_OF_MONTH) / cal.getMaximum(Calendar.DAY_OF_MONTH);
         DecimalFormat nf = new DecimalFormat("00.00%");
+        long from=System.currentTimeMillis();
         List<SummaryBean> summary = gmvService.querySummary();
         Map<String, Object> result = new HashMap();
         result.put("date", new SimpleDateFormat("yyyy-MM-dd").format(lastDataDate));
@@ -46,17 +47,14 @@ public class GmvC {
         line.setTitle(gmvType);
         lineCharts.add(line);
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(gmvService.getLastDataDate());
-        cal.set(Calendar.HOUR_OF_DAY,0);
-        cal.set(Calendar.MINUTE,0);
-        cal.set(Calendar.SECOND,0);
-        cal.set(Calendar.MILLISECOND,0);
-        Date now = new Date(cal.getTime().getTime());//当前最新数据日期
+        Date now = gmvService.getLastDataDate();//当前最新数据日期
+        Calendar cal=Calendar.getInstance();
+        cal.setTime(now);
         cal.set(Calendar.DAY_OF_MONTH,1);
         Date b = new Date(cal.getTime().getTime() - 1);//上月末
         cal.add(Calendar.MONTH, -1);
         Date a = new Date(cal.getTime().getTime());//上月初
+
         //上月初至今的数据
         List<GmvDayData> data = gmvService.queryDetail(a, now, gmvType);
 

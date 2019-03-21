@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md;
 
+import com.aihuishou.bi.md.front.chart.gmv.GmvService;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -12,10 +13,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletException;
@@ -24,6 +27,7 @@ import javax.servlet.ServletException;
 @ComponentScan("com.aihuishou")
 @EnableCaching
 @EnableAutoConfiguration
+@EnableScheduling
 @ImportResource("classpath:cas.xml")
 @EnableWebSecurity
 public class Application extends SpringBootServletInitializer {
@@ -31,6 +35,8 @@ public class Application extends SpringBootServletInitializer {
     public static ApplicationContext ctx;
 
     private static Environment env;
+    @Resource
+    private GmvService gmvService;
 
     public static void main(String[] args) {
         ctx = SpringApplication.run(Application.class, args);
@@ -64,4 +70,12 @@ public class Application extends SpringBootServletInitializer {
             this.logger.debug("No ContextLoaderListener registered, as createRootApplicationContext() did not return an application context");
         }
     }
+//
+//    @Scheduled(fixedRate = 60000)
+//    @PostConstruct
+//    public void refreshData(){
+//        gmvService.querySummary();
+//        gmvService.getLastDataDate();
+//        gmvService.queryDetail();
+//    }
 }

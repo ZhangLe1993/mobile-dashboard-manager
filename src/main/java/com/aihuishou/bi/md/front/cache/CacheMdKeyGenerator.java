@@ -3,12 +3,16 @@ package com.aihuishou.bi.md.front.cache;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.concurrent.Callable;
 
 @Component("md-key-generator")
 public class CacheMdKeyGenerator implements KeyGenerator {
+
+    @Resource
+    private CacheHolder cacheHolder;
+
     @Override
     public Object generate(Object o, Method method, Object... objects) {
         StringBuilder key = new StringBuilder(o.getClass().getName() + "|" + method.getName());
@@ -22,13 +26,7 @@ public class CacheMdKeyGenerator implements KeyGenerator {
             key.append("|");
         }
 
-        new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                return method.invoke(o,objects);
-            }
-        };
-
+        cacheHolder.monitorCacheKey(key.toString(),o,method,objects);
         return key.toString();
     }
 }

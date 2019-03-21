@@ -30,7 +30,7 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 3m
+      time-to-live: 1h
 
 cas:
   server:
