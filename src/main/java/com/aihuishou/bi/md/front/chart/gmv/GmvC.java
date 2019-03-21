@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.sql.Date;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/front/gmv")
 public class GmvC {
@@ -84,8 +87,8 @@ public class GmvC {
         line.getSeries().add(s1);
         LineChartData.Series s2 = getFullMonthDateData(b, data);
         s2.setName("上月" + gmvType);
-        if (s2.getData().size() > s1.getData().size()) {
-            s2.setData(s2.getData().subList(0, s1.getData().size()));
+        if (s2.getData().size() > xArr.size()) {
+            s2.setData(s2.getData().subList(0, xArr.size()));
         }
         line.getSeries().add(s2);
         return new ResponseEntity(lineCharts, HttpStatus.OK);
@@ -104,9 +107,18 @@ public class GmvC {
             points.put(it.getReportDate(), it.getAmountDay());
         });
         List<Object> d = xArr.stream().map(it -> {
-            Object v = points.get(it);
-            return v == null ? 0 : v;
-        }).collect(Collectors.toList());
+            try {
+                if (new SimpleDateFormat("yyyy-MM-dd").parse(it).getTime() > end.getTime()) {
+                    return null;
+                } else {
+                    Object v = points.get(it);
+                    return v == null ? 0 : v;
+                }
+            } catch (ParseException e) {
+                log.error("", e);
+                return null;
+            }
+        }).filter(it -> it != null).collect(Collectors.toList());
         LineChartData.Series series = new LineChartData.Series();
         series.setData(d);
         return series;
