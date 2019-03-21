@@ -78,9 +78,12 @@ public class GmvService {
                         summaryBean.setValue(a.get(it).get(0).getAmountDay());
                         summaryBean.setMonthTarget(a.get(it).get(0).getTarget());
                         summaryBean.setMonthAccumulation(a.get(it).get(0).getAmountToNow());
-                        if (b.get(it) != null) summaryBean.setValueContrast(b.get(it).get(0).getAmountDay());
-                        if (c.get(it) != null)
+                        if (b.get(it) != null) {
+                            summaryBean.setValueContrast(b.get(it).get(0).getAmountDay());
+                        }
+                        if (c.get(it) != null) {
                             summaryBean.setMonthAccumulationContrast(c.get(it).get(0).getAmountToNow());
+                        }
                         return summaryBean;
                     }).collect(Collectors.toList());
             //sum
@@ -92,15 +95,15 @@ public class GmvService {
                 a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
                 a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
                 a1.setMonthAccumulation(a1.getMonthAccumulation() + a2.getMonthAccumulation());
-                a1.setMonthAccumulationContrast(a1.getMonthAccumulation() + a2.getMonthAccumulation());
+                a1.setMonthAccumulationContrast(a1.getMonthAccumulationContrast() + a2.getMonthAccumulationContrast());
                 return a1;
             });
             summaryList.add(0, sum);
             return summaryList;
         } catch (InterruptedException e) {
-            log.error("",e);
+            log.error("", e);
         } catch (ExecutionException e) {
-            log.error("",e);
+            log.error("", e);
         }
         return new ArrayList<>();
     }
@@ -109,22 +112,22 @@ public class GmvService {
      * @return gmv_type->icon
      */
     private Map<String, String> getIcons() {
-        Map<String, String> icons=new LinkedHashMap<>();
+        Map<String, String> icons = new LinkedHashMap<>();
         String sql = "select gmv_type,gmv_icon from gmv_type_config order by order_no";
         try {
             List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
             for (Map<String, Object> r : rs) {
                 String gmvType = r.get("gmv_type").toString();
                 String gmvIcon = r.get("gmv_icon").toString();
-                icons.put(gmvType,gmvIcon);
+                icons.put(gmvType, gmvIcon);
             }
         } catch (SQLException e) {
-            log.error("",e);
+            log.error("", e);
         }
         return icons;
     }
 
-    public Set<String> allGmvType(){
+    public Set<String> allGmvType() {
         Set<String> allTypes = getIcons().keySet();
         allTypes.removeAll(banGmvType);
         return new HashSet(allTypes);
@@ -144,13 +147,13 @@ public class GmvService {
             });
             Calendar cal = Calendar.getInstance();
             cal.setTime(dataDate);
-            cal.set(Calendar.HOUR_OF_DAY,0);
-            cal.set(Calendar.MINUTE,0);
-            cal.set(Calendar.SECOND,0);
-            cal.set(Calendar.MILLISECOND,0);
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             return new Date(cal.getTime().getTime());
         } catch (SQLException e) {
-            log.error("",e);
+            log.error("", e);
             return null;
         }
     }
@@ -170,7 +173,7 @@ public class GmvService {
             List<GmvDayData> arr = new QueryRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
             return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
         } catch (SQLException e) {
-            log.error("",e);
+            log.error("", e);
             return new ArrayList<>();
         }
     }
