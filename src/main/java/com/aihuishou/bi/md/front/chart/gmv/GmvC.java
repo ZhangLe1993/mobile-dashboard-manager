@@ -118,7 +118,9 @@ public class GmvC {
         Calendar cal = Calendar.getInstance();
         cal.setTime(end);
         cal.set(Calendar.DAY_OF_MONTH, 1);
-        while (!(cal.getTime().getTime() > end.getTime())) {//不超过截止时间
+//        while (!(cal.getTime().getTime() > end.getTime())) {//不超过截止时间
+        int nowMonth = cal.get(Calendar.MONTH);
+        while (cal.get(Calendar.MONTH) == nowMonth) {//截止本月末
             arr.add(dayFormat.format(cal.getTime()));
             cal.add(Calendar.DATE, 1);
         }
