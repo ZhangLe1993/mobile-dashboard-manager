@@ -48,7 +48,7 @@ public class UserService {
 
     public List<User> all(String key,int pageIndex,int pageSize) {
         String sql = "select a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
-                "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable \n" +
+                "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin \n" +
                 "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
                 "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
         try {
