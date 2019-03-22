@@ -1,5 +1,5 @@
 import React from 'react'
-import {Table, Input,Button,Tag} from 'antd';
+import {Table, Input, Button, Tag} from 'antd';
 import 'antd/dist/antd.css';
 import axios from 'axios'
 import ActBtn from './activation-code.jsx';
@@ -13,13 +13,15 @@ class UserTable extends React.Component {
         this.state = {
             columns: [
                 {title: 'ID', dataIndex: 'id', key: 'id'},
-                {title: '用户名', dataIndex: 'name', key: 'name',render:(text,row)=>{
-                    if(row.isAdmin){
-                        return (<Tag color="#108ee9">{text}</Tag>);
-                    }else{
-                        return text;
+                {
+                    title: '用户名', dataIndex: 'name', key: 'name', render: (text, row) => {
+                        if (row.isAdmin) {
+                            return (<Tag color="#108ee9">{text}</Tag>);
+                        } else {
+                            return text;
+                        }
                     }
-                }},
+                },
                 {title: '工号', dataIndex: 'employeeNo', key: 'employeeNo'},
                 {title: '微信标识', dataIndex: 'openId', key: 'openId'},
                 {
@@ -27,7 +29,8 @@ class UserTable extends React.Component {
                     dataIndex: 'activationCode',
                     key: 'activationCode',
                     render: (text, record) => <ActBtn active={record.active} uid={record.id}
-                                                      employee={record.employeeNo} enable={record.enable}/>
+                                                      employee={record.employeeNo} enable={record.enable}
+                                                      afterActive={() => this.searchKeyFun(this.state.searchKey)}/>
                 },
                 // {title: '是否已激活', dataIndex: 'active', key: 'active',render:text=><Checkbox toggle checked={text}/>},
                 {
@@ -56,14 +59,15 @@ class UserTable extends React.Component {
             }
         }).then((response) => {
             for (let index = 0; index < response.data.data.length; index++) {
-                response.data.data[index].key = pageIndex*pageSize+index;
+                response.data.data[index].key = pageIndex * pageSize + index;
             }
             this.setState({data: response.data.data, total: response.data.total});
         });
     }
 
-    searchKey = (v) => {
+    searchKeyFun = (v) => {
         this.state.searchKey = v;
+        this.state.pageIndex = 1;
         this.searchUser(v, this.state.pageIndex, this.state.pageSize);
     };
 
@@ -71,7 +75,7 @@ class UserTable extends React.Component {
         this.searchUser('', 1, 10);
     }
 
-    clearCache=()=>{
+    clearCache = () => {
         axios.get("/back/clear_md");
     };
 
@@ -81,8 +85,9 @@ class UserTable extends React.Component {
                 <Button type="primary" onClick={this.clearCache}>清理缓存</Button>
                 <Search placeholder="input search text"
                         enterButton="Search"
-                        size="large" onSearch={this.searchKey}/>
+                        size="large" onSearch={this.searchKeyFun}/>
                 <Table columns={this.state.columns} dataSource={this.state.data} pagination={{
+                    current: this.state.pageIndex,
                     total: this.state.total, page_size: this.state.pageSize, onChange: (a, b) => {
                         this.searchUser(this.state.searchKey, a, b)
                     }

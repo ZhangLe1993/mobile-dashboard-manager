@@ -8,6 +8,7 @@ module.exports = {
         proxy: {
             '/back/**': {
                 target: 'http://localhost:8080',
+                // target: 'http://abdashboard.aihuishou.com',
                 logLevel: 'debug'
             }
         }

@@ -10,7 +10,7 @@ class ActivationButton extends React.Component {
     updateCodeOpen = () => this.setState({updateConfirmOpen: true});
     updateCodeClose = () => this.setState({updateConfirmOpen: false});
     updateCode = () => {
-        let employeeNo =this.props.employee;
+        let employeeNo = this.props.employee;
         let data = new FormData();
         data.append('employee-no', employeeNo);
         Axios.post("/back/update-activation-code", data, {
@@ -19,6 +19,9 @@ class ActivationButton extends React.Component {
             }
         }).then(() => {
             this.updateCodeClose();
+            if (this.props.afterActive) {
+                this.props.afterActive();
+            }
         });
     };
 
