@@ -56,7 +56,7 @@ class UserTable extends React.Component {
             }
         }).then((response) => {
             for (let index = 0; index < response.data.data.length; index++) {
-                response.data.data[index].key = index;
+                response.data.data[index].key = pageIndex*pageSize+index;
             }
             this.setState({data: response.data.data, total: response.data.total});
         });
