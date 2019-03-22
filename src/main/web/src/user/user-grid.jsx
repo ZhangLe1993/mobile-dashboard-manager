@@ -1,85 +1,87 @@
 import React from 'react'
-import {Header, Table, Checkbox} from 'semantic-ui-react'
+import {Table, Input,Button,notification} from 'antd';
+import 'antd/dist/antd.css';
 import axios from 'axios'
 import ActBtn from './activation-code.jsx';
 import BanUserToggle from './ban-user.jsx';
+
+const Search = Input.Search;
 
 class UserTable extends React.Component {
     constructor(pros) {
         super(pros);
         this.state = {
-            headers: ['ID', '用户名', '工号', '微信标识', '激活码', '是否已激活','是否可用'],
-            data: []
+            columns: [
+                {title: 'ID', dataIndex: 'id', key: 'id'},
+                {title: '用户名', dataIndex: 'name', key: 'name'},
+                {title: '工号', dataIndex: 'employeeNo', key: 'employeeNo'},
+                {title: '微信标识', dataIndex: 'openId', key: 'openId'},
+                {
+                    title: '激活码',
+                    dataIndex: 'activationCode',
+                    key: 'activationCode',
+                    render: (text, record) => <ActBtn active={record.active} uid={record.id}
+                                                      employee={record.employeeNo} enable={record.enable}/>
+                },
+                // {title: '是否已激活', dataIndex: 'active', key: 'active',render:text=><Checkbox toggle checked={text}/>},
+                {
+                    title: '是否可用',
+                    dataIndex: 'enable',
+                    key: 'enable',
+                    render: (text, record) => <BanUserToggle uid={record.id} enable={text}/>
+                },
+            ],
+            data: [],
+            total: 1,
+            searchKey: '',
+            pageIndex: 1,
+            pageSize: 10
         };
     }
 
-    componentDidMount() {
-        axios.get('/back/user').then((response) => {
-            this.setState({data: response.data});
+    searchUser(key, pageIndex, pageSize) {
+        this.state.pageIndex = pageIndex;
+        this.state.pageSize = pageSize;
+        axios.get('/back/user', {
+            params: {
+                key: key,
+                page_index: pageIndex,
+                page_size: pageSize,
+            }
+        }).then((response) => {
+            for (let index = 0; index < response.data.data.length; index++) {
+                response.data.data[index].key = index;
+            }
+            this.setState({data: response.data.data, total: response.data.total});
         });
     }
 
+    searchKey = (v) => {
+        this.state.searchKey = v;
+        this.searchUser(v, this.state.pageIndex, this.state.pageSize);
+    };
+
+    componentDidMount() {
+        this.searchUser('', 1, 10);
+    }
+
+    clearCache=()=>{
+        axios.get("/back/clear_md");
+    };
+
     render() {
-        let header = () => {
-            let arr = [];
-            let i=0;
-            for (let hn of this.state.headers) {
-                if (hn) {
-                    arr.push(<Table.HeaderCell key={i} textAlign='center'>{hn}</Table.HeaderCell>);
-                    i++;
-                }
-            }
-            return arr;
-        };
-
-        let row = () => {
-            let arr = [];
-            let i=0;
-            for (let row of this.state.data) {
-                if (row) {
-                    arr.push(
-                        <Table.Row key={i++}>
-                            <Table.Cell>
-                                <Header as='h2' textAlign='center'>
-                                    {row.id}
-                                </Header>
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                {row.name}
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                {row.employeeNo}
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                {row.openId}
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                <ActBtn code={row.activationCode} uid={row.id} enable={row.enable} />
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                <Checkbox toggle checked={row.active}/>
-                            </Table.Cell>
-                            <Table.Cell textAlign='center'>
-                                <BanUserToggle uid={row.id} enable={row.enable}/>
-                            </Table.Cell>
-                        </Table.Row>
-                    )
-                }
-            }
-            return arr;
-        };
-
         return (
-            <Table celled padded>
-                <Table.Header>
-                    <Table.Row>
-                        {header()}
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {row()}
-                </Table.Body>
-            </Table>
+            <div>
+                <Button type="primary" onClick={this.clearCache}>清理缓存</Button>
+                <Search placeholder="input search text"
+                        enterButton="Search"
+                        size="large" onSearch={this.searchKey}/>
+                <Table columns={this.state.columns} dataSource={this.state.data} pagination={{
+                    total: this.state.total, page_size: this.state.pageSize, onChange: (a, b) => {
+                        this.searchUser(this.state.searchKey, a, b)
+                    }
+                }}/>
+            </div>
         )
     }
 }

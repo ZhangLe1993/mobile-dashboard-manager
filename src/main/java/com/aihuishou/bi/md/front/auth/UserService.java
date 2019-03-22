@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,11 +46,15 @@ public class UserService {
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), Integer.parseInt(obId));
     }
 
-    public List<User> all() {
-        String sql = "select id,name,employee_no as employeeNo,open_id as openId," +
-                "active,activation_code as activationCode,enable from user";
+    public List<User> all(String key,int pageIndex,int pageSize) {
+        String sql = "select a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
+                "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable \n" +
+                "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
+                "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
         try {
-            return new QueryRunner(dataSource).query(sql, new BeanListHandler<User>(User.class));
+            key="%"+key+"%";
+            int a=(pageIndex-1)*pageSize;
+            return new QueryRunner(dataSource).query(sql, new BeanListHandler<User>(User.class),key,key,key,a,pageSize);
         } catch (SQLException e) {
             log.error("", e);
             return null;
@@ -94,5 +99,35 @@ public class UserService {
     public boolean active(String openId, String activationCode) throws SQLException {
         String sql = "update user set open_id=?,active=1 where activation_code=? and active=0 and enable=1";
         return new QueryRunner(dataSource).update(sql, openId, activationCode) > 0;
+    }
+
+    public Long count(String key) {
+        String sql = "select count(*) from dim_observer_account b  \n" +
+                "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
+        try {
+            key="%"+key+"%";
+            return new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(),key,key,key);
+        } catch (SQLException e) {
+            log.error("", e);
+            return null;
+        }
+    }
+
+    public User findByEmployeeNo(String employeeNo) throws SQLException {
+        String sql = "select a.id,a.name,a.employee_no as employeeNo,a.open_id as openId," +
+                "a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin from user a " +
+                "where a.employee_no=?";
+        return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), employeeNo);
+    }
+
+    public User insert(String employeeNo) throws SQLException {
+        String sql="select observer_account_user_name from dim_observer_account where observer_account_employee_no=?";
+        String name = new QueryRunner(dataSource).query(sql, new ScalarHandler<String>(), employeeNo);
+        if(name==null){
+            return null;
+        }
+        sql="insert into user(name,employee_no) values(?,?)";
+        new QueryRunner(dataSource).execute(sql,name,employeeNo);
+        return findByEmployeeNo(employeeNo);
     }
 }

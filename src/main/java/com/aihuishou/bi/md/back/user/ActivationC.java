@@ -33,14 +33,19 @@ public class ActivationC {
     private UserService userService;
 
     @PostMapping("/update-activation-code")
-    public ResponseEntity update(@RequestParam("user-id") Long uid) throws SQLException {
-        log.info("user-id:"+uid+" update activation code");
-        User user = userService.findById(uid);
-        if(!user.getActive()){//未激活可更新
-            userService.updateActivationCode(uid,UUID.randomUUID().toString());
+    public ResponseEntity update(@RequestParam("employee-no") String employeeNo) throws SQLException {
+        log.info("employee-no:" + employeeNo + " update activation code");
+        User user = userService.findByEmployeeNo(employeeNo);
+        if (user == null) {
+            user = userService.insert(employeeNo);
+        }
+        if (user == null) {
+            return new ResponseEntity("invalid employee no", HttpStatus.FORBIDDEN);
+        } else if (!user.getActive()) {//未激活可更新
+            userService.updateActivationCode(user.getId(), UUID.randomUUID().toString());
             return new ResponseEntity(HttpStatus.OK);
-        }else{
-            return new ResponseEntity("active already,code is freeze",HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity("active already,code is freeze", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -50,7 +55,7 @@ public class ActivationC {
         String content = user.getActivationCode();//二维码内容 即 激活码
         Map hints = new HashMap();
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
-        BitMatrix bitMatrix = new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, 400, 400,hints);
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, 400, 400, hints);
         ImageWrite.writeToStream(bitMatrix, "jpg", response.getOutputStream());
     }
 

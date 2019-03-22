@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -23,9 +25,14 @@ public class UserC {
     private UserService userService;
 
     @RequestMapping(value = "", produces = "application/json;charset=utf-8")
-    public ResponseEntity users() {
-        List<User> users = userService.all();
-        return new ResponseEntity(users, HttpStatus.OK);
+    public ResponseEntity users(@RequestParam(value = "key",required = false,defaultValue = "") String key,
+                                @RequestParam(value = "page_index",defaultValue = "1",required = false) int pageIndex,
+                                @RequestParam(value = "page_size",defaultValue = "10",required = false) int pageSize) {
+        List<User> users = userService.all(key,pageIndex,pageSize);
+        Map<String,Object> root=new HashMap<>();
+        root.put("data",users);
+        root.put("total",userService.count(key));
+        return new ResponseEntity(root, HttpStatus.OK);
     }
 
     @GetMapping("/ban")

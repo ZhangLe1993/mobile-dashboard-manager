@@ -10,9 +10,9 @@ class ActivationButton extends React.Component {
     updateCodeOpen = () => this.setState({updateConfirmOpen: true});
     updateCodeClose = () => this.setState({updateConfirmOpen: false});
     updateCode = () => {
-        let uid = this.props.uid;
+        let employeeNo =this.props.employee;
         let data = new FormData();
-        data.append('user-id', uid);
+        data.append('employee-no', employeeNo);
         Axios.post("/back/update-activation-code", data, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -29,15 +29,30 @@ class ActivationButton extends React.Component {
         });
     };
 
-    render() {
-        return (
-            <div>
+    renderBtn = () => {
+        if (this.props.active) {
+            return (
+                <Button positive onClick={this.viewCode}>查看激活码</Button>
+            )
+        } else if (this.props.uid == null) {
+            return (
+                <Button positive onClick={this.updateCodeOpen}>生成激活码</Button>
+            )
+        } else {
+            return (
                 <Button.Group>
                     <Button positive onClick={this.viewCode}>查看</Button>
                     <Button.Or text='or'/>
                     <Button positive onClick={this.updateCodeOpen}>更新</Button>
                 </Button.Group>
+            )
+        }
+    };
 
+    render() {
+        return (
+            <div>
+                {this.renderBtn()}
                 <Confirm open={this.state.updateConfirmOpen} onCancel={this.updateCodeClose}
                          onConfirm={this.updateCode}/>
 
