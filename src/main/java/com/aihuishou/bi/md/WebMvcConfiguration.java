@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md;
 
+import com.aihuishou.bi.md.front.auth.ActiveChecker;
 import com.aihuishou.bi.md.front.auth.CurrentUserResolver;
 import com.aihuishou.bi.md.front.auth.SidChecker;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,8 @@ import java.util.List;
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     @Resource
     private SidChecker sidChecker;
+    @Resource
+    private ActiveChecker activeChecker;
 
     @Resource
     private CurrentUserResolver currentUserResolver;
@@ -32,5 +35,6 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(sidChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login");
+        registry.addInterceptor(activeChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login","/front/active");
     }
 }
