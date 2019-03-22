@@ -34,7 +34,7 @@ class UserTable extends React.Component {
                     title: '是否可用',
                     dataIndex: 'enable',
                     key: 'enable',
-                    render: (text, record) => <BanUserToggle uid={record.id} enable={text}/>
+                    render: (text, record) => <BanUserToggle uid={record.id} enable={record.enable}/>
                 },
             ],
             data: [],
