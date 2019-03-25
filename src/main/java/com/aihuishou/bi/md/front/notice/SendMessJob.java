@@ -57,6 +57,9 @@ public class SendMessJob {
         Map arguments = new HashMap();
         String template_id = "8djC-TtdVUqn-A48-aehRU22-jz08vd1DVgXDRC9SC0";
         String formId = getFormId(openId);
+        if(formId==null){
+            return;
+        }
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);
