@@ -24,6 +24,6 @@ public class NoticeC {
     @PutMapping("/form_id")
     public void submitFormId(@RequestParam("form_id") String formId, @RequestHeader("sid") String sid) {
         String openId = sessionHelper.getOpenId(sid);
-//        sendMessJob.addFormId(openId,formId);
+        sendMessJob.addFormId(openId, formId);
     }
 }

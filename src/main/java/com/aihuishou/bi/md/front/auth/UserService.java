@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,8 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,19 +49,25 @@ public class UserService {
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), Integer.parseInt(obId));
     }
 
-    public List<User> all(String key,int pageIndex,int pageSize) {
+    public List<User> all(String key, int pageIndex, int pageSize) {
         String sql = "select a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
                 "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin \n" +
                 "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
                 "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
         try {
-            key="%"+key+"%";
-            int a=(pageIndex-1)*pageSize;
-            return new QueryRunner(dataSource).query(sql, new BeanListHandler<User>(User.class),key,key,key,a,pageSize);
+            key = "%" + key + "%";
+            int a = (pageIndex - 1) * pageSize;
+            return new QueryRunner(dataSource).query(sql, new BeanListHandler<User>(User.class), key, key, key, a, pageSize);
         } catch (SQLException e) {
             log.error("", e);
             return null;
         }
+    }
+
+    public List<String> allOpenIds() throws SQLException {
+        String sql = "select distinct open_id from user active=1 and enable=1";
+        List<Map<String, Object>> rs = new QueryRunner(dataSource).query(sql, new MapListHandler());
+        return rs.stream().map(it -> it.get("open_id").toString()).collect(Collectors.toList());
     }
 
     public void updateActivationCode(Long uid, String code) throws SQLException {
@@ -82,7 +91,7 @@ public class UserService {
             log.warn("UserNotActivationException openId:" + openId);
             throw new UserNotActivationException();
         } else if (!user.getEnable()) {//用户被禁止
-            log.warn("UserBanException openId:"+openId);
+            log.warn("UserBanException openId:" + openId);
             throw new UserBanException();
         } else {
             return user;
@@ -105,8 +114,8 @@ public class UserService {
         String sql = "select count(*) from dim_observer_account b  \n" +
                 "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
         try {
-            key="%"+key+"%";
-            return new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(),key,key,key);
+            key = "%" + key + "%";
+            return new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(), key, key, key);
         } catch (SQLException e) {
             log.error("", e);
             return null;
@@ -121,13 +130,13 @@ public class UserService {
     }
 
     public User insert(String employeeNo) throws SQLException {
-        String sql="select observer_account_user_name from dim_observer_account where observer_account_employee_no=?";
+        String sql = "select observer_account_user_name from dim_observer_account where observer_account_employee_no=?";
         String name = new QueryRunner(dataSource).query(sql, new ScalarHandler<String>(), employeeNo);
-        if(name==null){
+        if (name == null) {
             return null;
         }
-        sql="insert into user(name,employee_no) values(?,?)";
-        new QueryRunner(dataSource).execute(sql,name,employeeNo);
+        sql = "insert into user(name,employee_no) values(?,?)";
+        new QueryRunner(dataSource).execute(sql, name, employeeNo);
         return findByEmployeeNo(employeeNo);
     }
 }
