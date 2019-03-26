@@ -65,7 +65,7 @@ public class UserService {
     }
 
     public List<String> allOpenIds() throws SQLException {
-        String sql = "select distinct open_id from user active=1 and enable=1";
+        String sql = "select distinct open_id from user where active=1 and enable=1";
         List<Map<String, Object>> rs = new QueryRunner(dataSource).query(sql, new MapListHandler());
         return rs.stream().map(it -> it.get("open_id").toString()).collect(Collectors.toList());
     }
