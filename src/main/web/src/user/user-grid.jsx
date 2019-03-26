@@ -79,10 +79,19 @@ class UserTable extends React.Component {
         axios.get("/back/clear_md");
     };
 
+    triggerNotice = (no) => {
+        axios.get("/back/notice/trigger", {
+            params: {
+                "employee_no": no
+            }
+        });
+    };
+
     render() {
         return (
             <div>
                 <Button type="primary" onClick={this.clearCache}>清理缓存</Button>
+                <Search placeholder="工号" onSearch={this.triggerNotice} style={{width:250}} enterButton="发送模版消息"/>
                 <Search placeholder="input search text"
                         enterButton="Search"
                         size="large" onSearch={this.searchKeyFun}/>

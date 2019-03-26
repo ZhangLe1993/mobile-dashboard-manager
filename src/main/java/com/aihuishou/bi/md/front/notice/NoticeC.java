@@ -1,7 +1,10 @@
 package com.aihuishou.bi.md.front.notice;
 
 import com.aihuishou.bi.md.front.auth.SessionHelper;
+import com.aihuishou.bi.md.front.auth.User;
+import com.aihuishou.bi.md.front.auth.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -10,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.sql.SQLException;
 
 @Slf4j
 @RestController
-@RequestMapping("/front/notice")
+@RequestMapping()
 public class NoticeC {
 
     @Resource
@@ -22,14 +26,23 @@ public class NoticeC {
     @Resource
     private SendMessJob sendMessJob;
 
-    @PutMapping("/form_id")
+    @Resource
+    private UserService userService;
+
+    @PutMapping("/front/notice/form_id")
     public void submitFormId(@RequestParam("form_id") String formId, @RequestHeader("sid") String sid) {
         String openId = sessionHelper.getOpenId(sid);
         sendMessJob.addFormId(openId, formId);
     }
 
-    @GetMapping("/trigger")
-    public void trigger(){
-        sendMessJob.sendGmv();
+    @GetMapping("/back/notice/trigger")
+    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws SQLException {
+        if (!StringUtils.isEmpty(employeeNo)) {
+            User u = userService.findByEmployeeNo(employeeNo);
+            String openId = u.getOpenId();
+            sendMessJob.sendGmv(openId);
+        } else {
+            sendMessJob.sendGmv();
+        }
     }
 }

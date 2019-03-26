@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -38,6 +39,7 @@ public class SendMessJob {
     @Resource
     private GmvService gmvService;
 
+    @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() {
         try {
             List<String> openIds = userService.allOpenIds();
@@ -49,7 +51,7 @@ public class SendMessJob {
         }
     }
 
-    private void sendGmv(String openId) {
+    public void sendGmv(String openId) {
         RestTemplate restTemplate = new RestTemplate();
         String accessToken = sessionHelper.getAccessToken();
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
@@ -69,7 +71,7 @@ public class SendMessJob {
         Map keyword2 = new HashMap();
         SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
         keyword2.put("value", "昨日GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
-                + "\n本月GMV " + gmvValue.getMonthAccumulation()
+                + "\n本月GMV " + dataFormat(gmvValue.getMonthAccumulation())
                 + " 同比 " + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
