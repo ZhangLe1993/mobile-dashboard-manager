@@ -62,31 +62,32 @@ public class SendMessJob {
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);
+        arguments.put("page", "pages/statement/index");
         Map data = new HashMap();
         Map keyword1 = new HashMap();
         keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate()));
         Map keyword2 = new HashMap();
         SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-        keyword2.put("value", "昨日GMV" + dataFormat(gmvValue.getValue()) + "较前日" + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
-                + "本月GMV" + gmvValue.getMonthAccumulation()
-                + "同比" + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
+        keyword2.put("value", "昨日GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
+                + "\n本月GMV " + gmvValue.getMonthAccumulation()
+                + " 同比 " + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
         arguments.put("data", data);
         ResponseEntity<String> response = restTemplate.postForEntity(url, arguments, String.class);
-        log.info("sendGmv("+openId+") "+response.getStatusCodeValue()+" \n"+response.getBody());
+        log.info("sendGmv(" + openId + ") " + response.getStatusCodeValue() + " \n" + response.getBody());
     }
 
     private String dataFormatPercent(double p) {
-        DecimalFormat format = new DecimalFormat("00.00%");
-        return format.format(p);
+        DecimalFormat format = new DecimalFormat("0.00%");
+        return (p > 0 ? "\u2191" : "\u2193") + format.format(p);
     }
 
     private String dataFormat(Long value) {
         if (value < 10000) {
             return value.toString();
         } else {
-            DecimalFormat format = new DecimalFormat("00.00万");
+            DecimalFormat format = new DecimalFormat("0.00万");
             return format.format(value / 10000d);
         }
     }
