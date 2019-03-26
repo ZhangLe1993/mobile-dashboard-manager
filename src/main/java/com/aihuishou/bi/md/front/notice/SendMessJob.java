@@ -11,9 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +38,6 @@ public class SendMessJob {
     @Resource
     private GmvService gmvService;
 
-    @PostConstruct //TODO
     public void sendGmv() {
         try {
             List<String> openIds = userService.allOpenIds();
@@ -57,7 +56,7 @@ public class SendMessJob {
         Map arguments = new HashMap();
         String template_id = "8djC-TtdVUqn-A48-aehRU22-jz08vd1DVgXDRC9SC0";
         String formId = getFormId(openId);
-        if(formId==null){
+        if (formId == null) {
             return;
         }
         arguments.put("touser", openId);
@@ -68,23 +67,28 @@ public class SendMessJob {
         keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate()));
         Map keyword2 = new HashMap();
         SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-        keyword2.put("value", "昨日GMV" + dataFormat(gmvValue.getValue()) + "较前日" + dataFormatPercent((gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
+        keyword2.put("value", "昨日GMV" + dataFormat(gmvValue.getValue()) + "较前日" + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
                 + "本月GMV" + gmvValue.getMonthAccumulation()
-                + "同比" + dataFormatPercent((gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
+                + "同比" + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
         arguments.put("data", data);
         ResponseEntity<String> response = restTemplate.postForEntity(url, arguments, String.class);
+        log.info("sendGmv("+openId+") "+response.getStatusCodeValue()+" \n"+response.getBody());
     }
 
-    private String dataFormatPercent(long l) {
-        //TODO
-        return null;
+    private String dataFormatPercent(double p) {
+        DecimalFormat format = new DecimalFormat("00.00%");
+        return format.format(p);
     }
 
     private String dataFormat(Long value) {
-        //TODO
-        return null;
+        if (value < 10000) {
+            return value.toString();
+        } else {
+            DecimalFormat format = new DecimalFormat("00.00万");
+            return format.format(value / 10000d);
+        }
     }
 
 

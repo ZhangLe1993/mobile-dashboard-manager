@@ -34,7 +34,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(sidChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login");
-        registry.addInterceptor(activeChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login","/front/active");
+        registry.addInterceptor(sidChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login").excludePathPatterns("/front/notice/trigger");
+        registry.addInterceptor(activeChecker).addPathPatterns("/front/**").excludePathPatterns("/front/login","/front/active").excludePathPatterns("/front/notice/trigger");
     }
 }
