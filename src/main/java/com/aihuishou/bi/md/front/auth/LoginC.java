@@ -36,7 +36,7 @@ public class LoginC {
     private UserService userService;
 
     @RequestMapping("/login")
-    public void login(@RequestParam("code") String code, @RequestHeader(value = "sid", required = false) String sid, HttpServletResponse response) throws IOException {
+    public void login(@RequestParam("code") String code, @RequestHeader(value = "sid", required = false) String sid, HttpServletResponse response) throws IOException, SQLException {
         String openId = null;
         if (!StringUtils.isEmpty(sid)) {
             openId = sessionHelper.getOpenId(sid);
@@ -54,6 +54,7 @@ public class LoginC {
         }
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
+        response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
         response.setStatus(200);
     }
 
@@ -78,7 +79,7 @@ public class LoginC {
      * @return
      */
     @RequestMapping("/active")
-    public ResponseEntity active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid") String sid) throws SQLException {
+    public void active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid") String sid, HttpServletResponse response) throws SQLException {
         String openId = sessionHelper.getOpenId(sid);
         if (StringUtils.isEmpty(openId)) {//校验用户SID会话
             throw new InvalidSidException();
@@ -91,7 +92,8 @@ public class LoginC {
             log.warn("activate fail,openId:" + openId + " activationCode:" + activationCode);
             throw new ActivationFail();
         } else {
-            return new ResponseEntity(HttpStatus.OK);
+            response.setStatus(200);
+            response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
         }
     }
 
