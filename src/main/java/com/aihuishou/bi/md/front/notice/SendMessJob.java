@@ -70,8 +70,8 @@ public class SendMessJob {
         keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate()));
         Map keyword2 = new HashMap();
         SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-        keyword2.put("value", "昨日GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
-                + "\n本月GMV " + dataFormat(gmvValue.getMonthAccumulation())
+        keyword2.put("value", "昨日(B2B)GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
+                + "\n本月(B2B)GMV " + dataFormat(gmvValue.getMonthAccumulation())
                 + " 同比 " + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
