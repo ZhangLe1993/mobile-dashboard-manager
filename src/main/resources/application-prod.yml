@@ -1,7 +1,7 @@
 spring:
   datasource:
     url: jdbc:mysql://rm-bp1pw59t9hspt57z5.mysql.rds.aliyuncs.com:3306/mobi_dashboard?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
-    username: rpt
+    username: mobi_dashboard
   redis:
     host: r-bp1df75eafff5994.redis.rds.aliyuncs.com
     db: 14
