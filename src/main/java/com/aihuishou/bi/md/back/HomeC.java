@@ -36,6 +36,7 @@ public class HomeC {
 
     @RequestMapping("/gmv_data_date")
     public String updateGmvDataDate(@RequestParam(value = "date", required = false) String date) throws ParseException {
+        clearCache();
         gmvService.setLastDataDate(date);
         return new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate());
     }
