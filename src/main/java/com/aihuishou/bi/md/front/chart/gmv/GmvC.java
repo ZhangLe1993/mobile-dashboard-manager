@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,26 +49,79 @@ public class GmvC {
     @RequestMapping("/month_day")
     public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType) {
         List<LineChartData> lineCharts = new ArrayList<>();
-        LineChartData line = new LineChartData();
-        line.setTitle(gmvType);
-        lineCharts.add(line);
-
         Date now = gmvDataDateService.getLastDataDate();//当前最新数据日期
         Calendar cal = Calendar.getInstance();
         cal.setTime(now);
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-
-        cal.add(Calendar.MONTH, -1);//TODO
-
+        cal.set(Calendar.DAY_OF_MONTH, 1);//本月初
         Date b = new Date(cal.getTime().getTime() - 1);//上月末
         cal.add(Calendar.MONTH, -1);
         Date a = new Date(cal.getTime().getTime());//上月初
+        cal.add(Calendar.MONTH,1);
+        cal.add(Calendar.YEAR,-1);
+        Date lastYearMonthBegin=new Date(cal.getTimeInMillis());//去年同月初
+        cal.add(Calendar.MONTH,1);
+        Date lastYearMonthEnd=new Date(cal.getTime().getTime() - 1);;//去年同月末
 
         //上月初至今的数据
+        List<GmvDayData> data=getDetailData(gmvType,a,now);
+        LineChartData dayLine = new LineChartData();//每日数据折线
+        LineChartData accLine = new LineChartData();//累计值数据折线
+        dayLine.setTitle(gmvType);
+        accLine.setTitle(gmvType);
+        List<String> xArr = getFullMonthDate(now);
+        dayLine.setxAxis(xArr);//本月设X轴
+        accLine.setxAxis(xArr);
+        //本月每天
+        LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
+            return it.getAmountDay();
+        });
+        s1.setName("本月" + gmvType);
+        dayLine.getSeries().add(s1);
+        //本月累计
+        LineChartData.Series acc1 = getFullMonthDayData(now, data, it -> {
+            return it.getAmountToNow();
+        });
+        acc1.setName("本月"+gmvType+"累计");
+        accLine.getSeries().add(acc1);
+        //上月每天
+        LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
+            return it.getAmountDay();
+        });
+        s2.setName("上月" + gmvType);
+        if (s2.getData().size() > xArr.size()) {
+            s2.setData(s2.getData().subList(0, xArr.size()));
+        }
+        dayLine.getSeries().add(s2);
+        //上月累计
+        LineChartData.Series acc2 = getFullMonthDayData(b, data, it -> {
+            return it.getAmountToNow();
+        });
+        acc2.setName("上月" + gmvType+"累计");
+        if (acc2.getData().size() > xArr.size()) {
+            acc2.setData(acc2.getData().subList(0, xArr.size()));
+        }
+        accLine.getSeries().add(acc2);
+        //去年同月
+        List<GmvDayData> lastYearData = getDetailData(gmvType, lastYearMonthBegin, lastYearMonthEnd);
+        LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
+            return it.getAmountToNow();
+        });
+        acc3.setName("去年同月" + gmvType+"累计");
+        if (acc3.getData().size() > xArr.size()) {
+            acc3.setData(acc3.getData().subList(0, xArr.size()));
+        }
+        accLine.getSeries().add(acc3);
+        //添加每天+累计的折线图
+        lineCharts.add(dayLine);
+        lineCharts.add(accLine);
+        return new ResponseEntity(lineCharts, HttpStatus.OK);
+    }
+
+    private List<GmvDayData> getDetailData(String gmvType,Date from,Date to){
         List<GmvDayData> data;
         if ("gmv".equalsIgnoreCase(gmvType)) {
             data = gmvService.allGmvType().parallelStream().flatMap(t -> {
-                return gmvService.queryDetail(a, now, t).stream();
+                return gmvService.queryDetail(from, to, t).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()
                     .map(it -> {
@@ -75,39 +129,31 @@ public class GmvC {
                         v.setReportDate(it.getKey());
                         v.setGmvType("GMV");
                         return it.getValue().stream().reduce(v, (a1, a2) -> {
-                            a1.setAmountDay(a1.getAmountDay() + a2.getAmountDay());//后续只会用到amountDay
+                            a1.setAmountDay(a1.getAmountDay() + a2.getAmountDay());
+                            a1.setAmountToNow(a1.getAmountToNow() + a2.getAmountToNow());
                             return a1;
                         });
                     }).collect(Collectors.toList());
         } else {
-            data = gmvService.queryDetail(a, now, gmvType);
+            data = gmvService.queryDetail(from, to, gmvType);
         }
-
-        List<String> xArr = getFullMonthDate(now);
-        line.setxAxis(xArr);//本月设X轴
-        LineChartData.Series s1 = getFullMonthDateData(now, data);
-        s1.setName("本月" + gmvType);
-        line.getSeries().add(s1);
-        LineChartData.Series s2 = getFullMonthDateData(b, data);
-        s2.setName("上月" + gmvType);
-        if (s2.getData().size() > xArr.size()) {
-            s2.setData(s2.getData().subList(0, xArr.size()));
-        }
-        line.getSeries().add(s2);
-        return new ResponseEntity(lineCharts, HttpStatus.OK);
+        return data;
     }
+
 
     /**
      * 获取截止时间所在月从月初开始的所有数据
      *
-     * @param end 截止时间(包含)
+     * @param end  截止时间(包含)
+     * @param data 原始数据
+     * @param item 要计算的项
      * @return
      */
-    private LineChartData.Series getFullMonthDateData(Date end, List<GmvDayData> data) {
+    private LineChartData.Series getFullMonthDayData(Date end, List<GmvDayData> data, Function<GmvDayData, Object> item) {
         List<String> xArr = getFullMonthDate(end);
         Map<String, Object> points = new HashMap<>();
         data.stream().forEach(it -> {
-            points.put(it.getReportDate(), it.getAmountDay());
+            points.put(it.getReportDate(), item.apply(it));
         });
         List<Object> d = xArr.stream().map(it -> {
             try {
