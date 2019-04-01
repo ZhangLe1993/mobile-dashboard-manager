@@ -45,6 +45,7 @@ public class SendMessJob {
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() {
         try {
+            log.info("begin sendGmv======");
             List<String> openIds = userService.allOpenIds();
             for (String openId : openIds) {
                 sendGmv(openId);
