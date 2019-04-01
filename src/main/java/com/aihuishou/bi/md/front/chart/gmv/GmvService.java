@@ -12,6 +12,8 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -54,7 +56,18 @@ public class GmvService {
             now.add(Calendar.DAY_OF_MONTH, -1);
             Date contrast = new Date(now.getTime().getTime());//最新数据日期 上一日
             now.add(Calendar.DAY_OF_MONTH, 1);
-            now.add(Calendar.MONTH, -2);//TODO
+
+            now.add(Calendar.MONTH, -1);
+
+
+            try {//TODO 之后删掉
+                if(System.currentTimeMillis()<=new SimpleDateFormat("yyyy-MM-dd").parse("2019-04-02").getTime()){
+                    now.add(Calendar.MONTH, -1);
+                }
+            } catch (ParseException e) {
+                log.error("",e);
+            }
+
             Date monthContrast = new Date(now.getTime().getTime());//上月同日对比
 
             FutureTask<Map<String, List<GmvDayData>>> aC = submitQuery(dataDate);
