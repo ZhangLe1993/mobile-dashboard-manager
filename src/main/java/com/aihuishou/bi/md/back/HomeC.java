@@ -1,6 +1,6 @@
 package com.aihuishou.bi.md.back;
 
-import com.aihuishou.bi.md.front.chart.gmv.GmvService;
+import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisCallback;
@@ -21,14 +21,14 @@ public class HomeC {
     private RedisTemplate redisTemplate;
 
     @Resource
-    private GmvService gmvService;
+    private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/clear_md")
     public void clearCache() {
         redisTemplate.execute(new RedisCallback() {
             @Override
             public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
-                redisConnection.flushDb();
+                redisConnection.flushDb();//TODO 只clear md
                 return null;
             }
         });
@@ -37,8 +37,8 @@ public class HomeC {
     @RequestMapping("/gmv_data_date")
     public String updateGmvDataDate(@RequestParam(value = "date", required = false) String date) throws ParseException {
         clearCache();
-        gmvService.setLastDataDate(date);
-        return new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate());
+        gmvDataDateService.setLastDataDate(date);
+        return new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate());
     }
 
     @RequestMapping("")

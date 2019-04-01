@@ -27,9 +27,12 @@ public class GmvC {
     @Resource
     private GmvService gmvService;
 
+    @Resource
+    private GmvDataDateService gmvDataDateService;
+
     @RequestMapping("/summary")
     public ResponseEntity summary() {
-        Date lastDataDate = gmvService.getLastDataDate();
+        Date lastDataDate = gmvDataDateService.getLastDataDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
         double monthProgress = (double) cal.get(Calendar.DAY_OF_MONTH) / cal.getMaximum(Calendar.DAY_OF_MONTH);
@@ -49,7 +52,7 @@ public class GmvC {
         line.setTitle(gmvType);
         lineCharts.add(line);
 
-        Date now = gmvService.getLastDataDate();//当前最新数据日期
+        Date now = gmvDataDateService.getLastDataDate();//当前最新数据日期
         Calendar cal = Calendar.getInstance();
         cal.setTime(now);
         cal.set(Calendar.DAY_OF_MONTH, 1);

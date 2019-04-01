@@ -3,22 +3,15 @@ package com.aihuishou.bi.md.front.chart.gmv;
 import com.aihuishou.bi.md.front.cache.CacheMd;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Date;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -39,6 +32,9 @@ public class GmvService {
     private DataSource gp;
 
     @Resource
+    private GmvDataDateService gmvDataDateService;
+
+    @Resource
     private DataSource mysql;
     //要ban掉的gmv 类型
     private List<String> banGmvType = new ArrayList<>();
@@ -52,7 +48,7 @@ public class GmvService {
     public List<SummaryBean> querySummary() {
         try {
             //最近2日，上月同比日
-            Date dataDate = getLastDataDate();//最新数据日期
+            Date dataDate = gmvDataDateService.getLastDataDate();//最新数据日期
             Calendar now = Calendar.getInstance();
             now.setTime(dataDate);
             now.add(Calendar.DAY_OF_MONTH, -1);
@@ -138,39 +134,7 @@ public class GmvService {
         return new HashSet(allTypes);
     }
 
-    @Cacheable(value = "gmv-last-data-date", key = "123")
-    public Date getLastDataDate() {
-        String sql = "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
-        Date dataDate = null;
-        try {
-            dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {
-                @Override
-                public Date handle(ResultSet resultSet) throws SQLException {
-                    resultSet.next();
-                    return resultSet.getDate("report_date");
-                }
-            });
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(dataDate);
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            return new Date(cal.getTime().getTime());
-        } catch (SQLException e) {
-            log.error("", e);
-            return null;
-        }
-    }
 
-    @CachePut(key = "123",value = "gmv-last-data-date")
-    public Date setLastDataDate(String date) throws ParseException {
-        if(!StringUtils.isEmpty(date)&&!"null".equalsIgnoreCase(date)){
-            return new Date(new SimpleDateFormat("yyyy-MM-dd").parse(date).getTime());
-        }else{
-            return getLastDataDate();
-        }
-    }
 
     @CacheMd
     public List<GmvDayData> queryDetail(Date from, Date to, String gmvType) {

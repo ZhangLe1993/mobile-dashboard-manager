@@ -2,6 +2,7 @@ package com.aihuishou.bi.md.front.notice;
 
 import com.aihuishou.bi.md.front.auth.SessionHelper;
 import com.aihuishou.bi.md.front.auth.UserService;
+import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
 import com.aihuishou.bi.md.front.chart.gmv.GmvService;
 import com.aihuishou.bi.md.front.chart.gmv.SummaryBean;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class SendMessJob {
 
     @Resource
     private GmvService gmvService;
+    @Resource
+    private GmvDataDateService gmvDataDateService;
 
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() {
@@ -67,7 +70,7 @@ public class SendMessJob {
         arguments.put("page", "pages/statement/index");
         Map data = new HashMap();
         Map keyword1 = new HashMap();
-        keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvService.getLastDataDate()));
+        keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate()));
         Map keyword2 = new HashMap();
         SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
         keyword2.put("value", "昨日(B2B)GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
