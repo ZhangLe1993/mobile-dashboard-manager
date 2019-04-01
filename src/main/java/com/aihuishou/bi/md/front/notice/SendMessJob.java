@@ -45,13 +45,13 @@ public class SendMessJob {
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() {
         try {
-            log.info("begin sendGmv======");
             List<String> openIds = userService.allOpenIds();
+            log.info("begin sendGmv======"+ org.apache.commons.lang3.StringUtils.join(openIds,","));
             for (String openId : openIds) {
                 sendGmv(openId);
             }
         } catch (SQLException e) {
-            log.error("sendGmv", e);
+            log.error("sendGmv error", e);
         }
     }
 
