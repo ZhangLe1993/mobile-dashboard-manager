@@ -111,11 +111,13 @@ public class SendMessJob {
         ListOperations opt = redisTemplate.opsForList();
         List<FormId> arr = opt.range(key, 0, -1);
         int total = arr.size();
-        for (int i = 0; i < arr.size(); i++) {
-            FormId f = arr.get(i);
-            if (f.getExpireTime() >= System.currentTimeMillis()) {//已过期
-                redisTemplate.opsForList().remove(key, 1, f.getValue());
-                total--;
+        if(total>=FORM_MAX_SIZE){//存储已满时触发检查，清理过期的FormId
+            for (int i = 0; i < arr.size(); i++) {
+                FormId f = arr.get(i);
+                if (f.getExpireTime() >= System.currentTimeMillis()) {//已过期
+                    redisTemplate.opsForList().remove(key, 1, f.getValue());
+                    total--;
+                }
             }
         }
         if (total < FORM_MAX_SIZE) {//没超过上线就继续存储
