@@ -66,8 +66,8 @@ public class GmvC {
         List<GmvDayData> data=getDetailData(gmvType,a,now);
         LineChartData dayLine = new LineChartData();//每日数据折线
         LineChartData accLine = new LineChartData();//累计值数据折线
-        dayLine.setTitle(gmvType);
-        accLine.setTitle(gmvType);
+        dayLine.setTitle(gmvType+"每日");
+        accLine.setTitle(gmvType+"月累计");
         List<String> xArr = getFullMonthDate(now);
         dayLine.setxAxis(xArr);//本月设X轴
         accLine.setxAxis(xArr);
