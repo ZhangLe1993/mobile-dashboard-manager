@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Caching(
         cacheable = {
-                @Cacheable(value = "cache-md", keyGenerator = "md-key-generator")
+                @Cacheable(value = CacheHolder.CACHE_NAME, keyGenerator = "md-key-generator")
         }
 )
 public @interface CacheMd {

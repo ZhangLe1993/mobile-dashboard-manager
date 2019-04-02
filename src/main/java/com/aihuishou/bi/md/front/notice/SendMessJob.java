@@ -46,7 +46,7 @@ public class SendMessJob {
     public void sendGmv() {
         try {
             List<String> openIds = userService.allOpenIds();
-            log.info("begin sendGmv======"+ org.apache.commons.lang3.StringUtils.join(openIds,","));
+            log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
             for (String openId : openIds) {
                 sendGmv(openId);
             }
@@ -61,8 +61,9 @@ public class SendMessJob {
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
         Map arguments = new HashMap();
         String template_id = "8djC-TtdVUqn-A48-aehRU22-jz08vd1DVgXDRC9SC0";
-        String formId = getFormId(openId);
+        String formId = popFormId(openId);
         if (formId == null) {
+            log.info("openId(" + openId + "),formId not found");
             return;
         }
         arguments.put("touser", openId);
@@ -120,7 +121,7 @@ public class SendMessJob {
         if (total < FORM_MAX_SIZE) {//没超过上线就继续存储
             FormId f = new FormId();
             f.setValue(formId);
-            f.setExpireTime(System.currentTimeMillis() + (3600L * 24 * 6));//6天延迟
+            f.setExpireTime(System.currentTimeMillis() + (1000L * 3600 * 24 * 6));//6天延迟
             redisTemplate.opsForList().rightPush(key, f);
         }
     }
@@ -131,7 +132,7 @@ public class SendMessJob {
      * @param openId
      * @return
      */
-    public String getFormId(String openId) {
+    public String popFormId(String openId) {
         String key = FORM_ID_PREFIX + openId;
         while (true) {
             Object formId = redisTemplate.opsForList().leftPop(key);
@@ -144,5 +145,11 @@ public class SendMessJob {
             }
         }
         return null;
+    }
+
+    public List<FormId> allFormIds(String openId) {
+        String key = FORM_ID_PREFIX + openId;
+        List formId = redisTemplate.opsForList().range(key, 0, -1);
+        return formId;
     }
 }

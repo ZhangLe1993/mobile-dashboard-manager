@@ -38,7 +38,7 @@ public class UserDetailsObj implements UserDetails {
      */
     @Override
     public Collection<GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();//TODO
+        List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
         list.add(new SimpleGrantedAuthority("ROLE_BACK"));
         return list;
     }
