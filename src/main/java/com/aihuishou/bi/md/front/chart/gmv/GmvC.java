@@ -36,7 +36,7 @@ public class GmvC {
         Date lastDataDate = gmvDataDateService.getLastDataDate();
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
-        double monthProgress = (double) cal.get(Calendar.DAY_OF_MONTH) / cal.getMaximum(Calendar.DAY_OF_MONTH);
+        double monthProgress = (double) cal.get(Calendar.DAY_OF_MONTH) / (cal.getMaximum(Calendar.DAY_OF_MONTH)-cal.getMinimum(Calendar.DAY_OF_MONTH));
         DecimalFormat nf = new DecimalFormat("00.00%");
         List<SummaryBean> summary = gmvService.querySummary();
         Map<String, Object> result = new HashMap();
