@@ -45,7 +45,7 @@ public class UserService {
     public User findByObId(String obId) throws SQLException {
         String sql = "select a.id,a.name,a.employee_no as employeeNo,a.open_id as openId," +
                 "a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin from user a " +
-                "join dim_observer_account b on a.employee_no=b.observer_account_employee_no where b.observer_account_id=?";
+                "join dim_observer_account b on a.employee_no=b.observer_account_employee_no where b.observer_account_is_active_flag=1 and b.observer_account_id=?";
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), Integer.parseInt(obId));
     }
 
@@ -53,7 +53,7 @@ public class UserService {
         String sql = "select a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
                 "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin \n" +
                 "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
-                "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
+                "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
         try {
             key = "%" + key + "%";
             int a = (pageIndex - 1) * pageSize;
@@ -112,7 +112,7 @@ public class UserService {
 
     public Long count(String key) {
         String sql = "select count(*) from dim_observer_account b  \n" +
-                "where b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
+                "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
         try {
             key = "%" + key + "%";
             return new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(), key, key, key);
@@ -130,7 +130,7 @@ public class UserService {
     }
 
     public User insert(String employeeNo) throws SQLException {
-        String sql = "select observer_account_user_name from dim_observer_account where observer_account_employee_no=?";
+        String sql = "select observer_account_user_name from dim_observer_account where observer_account_is_active_flag=1 and observer_account_employee_no=?";
         String name = new QueryRunner(dataSource).query(sql, new ScalarHandler<String>(), employeeNo);
         if (name == null) {
             return null;
