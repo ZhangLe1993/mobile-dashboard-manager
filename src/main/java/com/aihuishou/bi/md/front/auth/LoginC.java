@@ -3,6 +3,7 @@ package com.aihuishou.bi.md.front.auth;
 import com.aihuishou.bi.md.front.auth.exception.ActivationFail;
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
 import com.aihuishou.bi.md.front.auth.exception.WeixinAuthFailException;
+import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,9 @@ public class LoginC {
     @Resource
     private UserService userService;
 
+    @Resource
+    private GroupService groupService;
+
     @RequestMapping("/login")
     public void login(@RequestParam("code") String code, @RequestHeader(value = "sid", required = false) String sid, HttpServletResponse response) throws IOException, SQLException {
         String openId = null;
@@ -55,6 +59,7 @@ public class LoginC {
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
         response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
+        response.setHeader("group", JSONArray.toJSONString(groupService.list(openId)));
         response.setStatus(200);
     }
 
