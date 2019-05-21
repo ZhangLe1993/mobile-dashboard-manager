@@ -46,4 +46,10 @@ public class NoticeC {
             sendMessJob.sendGmv();
         }
     }
+
+    @GetMapping("/back/notice/trigger/test")
+    public void test() throws IOException, SQLException {
+        log.info("发送模板测试");
+        sendMessJob.sendGmv("oYscn48qNNGWWYVfZLuXzfWKfFQc");
+    }
 }
