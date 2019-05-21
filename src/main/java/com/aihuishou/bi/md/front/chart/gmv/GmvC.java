@@ -32,13 +32,13 @@ public class GmvC {
     private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/summary")
-    public ResponseEntity summary() {
-        Date lastDataDate = gmvDataDateService.getLastDataDate();
+    public ResponseEntity summary(@RequestParam(value="service_type", required = false) String service) {
+        Date lastDataDate = gmvDataDateService.getLastDataDate(service);
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
         double monthProgress = (double) cal.get(Calendar.DAY_OF_MONTH) / cal.getActualMaximum(Calendar.DAY_OF_MONTH);
         DecimalFormat nf = new DecimalFormat("00.00%");
-        List<SummaryBean> summary = gmvService.querySummary();
+        List<SummaryBean> summary = gmvService.querySummary(service);
         Map<String, Object> result = new HashMap();
         result.put("date", new SimpleDateFormat("yyyy-MM-dd").format(lastDataDate));
         result.put("date_progress", nf.format(monthProgress));
@@ -46,10 +46,13 @@ public class GmvC {
         return new ResponseEntity(result, HttpStatus.OK);
     }
 
+
+
     @RequestMapping("/month_day")
-    public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType) {
+    public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType,
+                                   @RequestParam(value="service_type", required = false) String service) {
         List<LineChartData> lineCharts = new ArrayList<>();
-        Date now = gmvDataDateService.getLastDataDate();//当前最新数据日期
+        Date now = gmvDataDateService.getLastDataDate(service);//当前最新数据日期
         Calendar cal = Calendar.getInstance();
         cal.setTime(now);
         cal.set(Calendar.DAY_OF_MONTH, 1);//本月初
@@ -63,7 +66,7 @@ public class GmvC {
         Date lastYearMonthEnd=new Date(cal.getTime().getTime() - 1);;//去年同月末
 
         //上月初至今的数据
-        List<GmvDayData> data=getDetailData(gmvType,a,now);
+        List<GmvDayData> data=getDetailData(gmvType, service, a,now);
         LineChartData dayLine = new LineChartData();//每日数据折线
         LineChartData accLine = new LineChartData();//累计值数据折线
         dayLine.setTitle(gmvType+"每日");
@@ -102,7 +105,7 @@ public class GmvC {
         }
         accLine.getSeries().add(acc2);
         //去年同月
-        List<GmvDayData> lastYearData = getDetailData(gmvType, lastYearMonthBegin, lastYearMonthEnd);
+        List<GmvDayData> lastYearData = getDetailData(gmvType, service, lastYearMonthBegin, lastYearMonthEnd);
         LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
             return it.getAmountToNow();
         });
@@ -117,11 +120,11 @@ public class GmvC {
         return new ResponseEntity(lineCharts, HttpStatus.OK);
     }
 
-    private List<GmvDayData> getDetailData(String gmvType,Date from,Date to){
+    private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to){
         List<GmvDayData> data;
         if ("gmv".equalsIgnoreCase(gmvType)) {
             data = gmvService.allGmvType().parallelStream().flatMap(t -> {
-                return gmvService.queryDetail(from, to, t).stream();
+                return gmvService.queryDetail(from, to, t, service).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()
                     .map(it -> {
@@ -135,7 +138,7 @@ public class GmvC {
                         });
                     }).collect(Collectors.toList());
         } else {
-            data = gmvService.queryDetail(from, to, gmvType);
+            data = gmvService.queryDetail(from, to, gmvType, service);
         }
         return data;
     }

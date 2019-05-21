@@ -2,6 +2,7 @@ package com.aihuishou.bi.md.front.auth;
 
 import com.aihuishou.bi.md.front.auth.exception.ActivationFail;
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
+import com.aihuishou.bi.md.front.auth.exception.UserBanException;
 import com.aihuishou.bi.md.front.auth.exception.WeixinAuthFailException;
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -56,10 +58,14 @@ public class LoginC {
                 throw new WeixinAuthFailException();
             }
         }
+        List<String> group = groupService.list(openId);
+        if(group == null || group.size() == 0) {
+            throw new UserBanException();
+        }
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
         response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
-        response.setHeader("group", JSONArray.toJSONString(groupService.list(openId)));
+        response.setHeader("group", JSONArray.toJSONString(group));
         response.setStatus(200);
     }
 

@@ -33,10 +33,11 @@ public class HomeC {
     }
 
     @RequestMapping("/gmv_data_date")
-    public String updateGmvDataDate(@RequestParam(value = "date", required = false) String date) throws ParseException {
+    public String updateGmvDataDate(@RequestParam(value = "date", required = false) String date,
+                                    @RequestParam(value="service_type", required = false) String service) throws ParseException {
         clearMd();
-        gmvDataDateService.setLastDataDate(date);
-        return new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate());
+        gmvDataDateService.setLastDataDate(date, service);
+        return new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate(service));
     }
 
     @RequestMapping("/form_ids")

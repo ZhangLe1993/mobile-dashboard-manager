@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.sql.SQLException;
 
 @Slf4j
@@ -36,7 +37,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger")
-    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws SQLException {
+    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws IOException, SQLException {
         if (!StringUtils.isEmpty(employeeNo)) {
             User u = userService.findByEmployeeNo(employeeNo);
             String openId = u.getOpenId();

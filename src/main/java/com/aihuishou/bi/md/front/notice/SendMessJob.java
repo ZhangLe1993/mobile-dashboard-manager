@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md.front.notice;
 
+import com.aihuishou.bi.md.front.auth.GroupService;
 import com.aihuishou.bi.md.front.auth.SessionHelper;
 import com.aihuishou.bi.md.front.auth.UserService;
 import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
@@ -11,9 +12,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -42,8 +45,11 @@ public class SendMessJob {
     @Resource
     private GmvDataDateService gmvDataDateService;
 
+    @Resource
+    private GroupService groupService;
+
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
-    public void sendGmv() {
+    public void sendGmv() throws IOException, SQLException {
         try {
             List<String> openIds = userService.allOpenIds();
             log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
@@ -55,34 +61,90 @@ public class SendMessJob {
         }
     }
 
-    public void sendGmv(String openId) {
+    public void sendGmv(String openId) throws IOException, SQLException {
         RestTemplate restTemplate = new RestTemplate();
         String accessToken = sessionHelper.getAccessToken();
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
-        Map arguments = new HashMap();
+        Map<String,Object> arguments = new HashMap<>();
         String template_id = "8djC-TtdVUqn-A48-aehRU22-jz08vd1DVgXDRC9SC0";
         String formId = popFormId(openId);
         if (formId == null) {
             log.info("openId(" + openId + "),formId not found");
             return;
         }
+        List<String> group = groupService.list(openId);
+        if(group == null || group.size() == 0) {
+            return;
+        }
+        Map<String,Object> data = new HashMap<>();
+
+        String template = "昨日(%s)GMV: %s 较前日 %s \n 本月(%s)GMV: %s  同比: %s \n";
+        if(group.contains(GroupMapping.BTB.getKey())) {
+            SummaryBean gmvValue = gmvService.querySummary(GroupMapping.BTB.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+            Map<String,Object> temp = buildData(
+                    "keyword1",
+                    "keyword2",
+                    template,
+                    GroupMapping.BTB.getKey(),
+                    GroupMapping.BTB.getKey(),
+                    dataFormat(gmvValue.getValue()),
+                    dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast()),
+                    dataFormat(gmvValue.getMonthAccumulation()),
+                    dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
+            data.putAll(temp);
+        }
+
+        if(group.contains(GroupMapping.CTB.getKey())) {
+            SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+            Map<String,Object> temp = buildData(
+                    "keyword3",
+                    "keyword4",
+                    template,
+                    GroupMapping.CTB_0.getValue(),
+                    GroupMapping.CTB_0.getKey(),
+                    dataFormat(hsValue.getValue()),
+                    dataFormatPercent((double) (hsValue.getValue() - hsValue.getValueContrast()) / hsValue.getValueContrast()),
+                    dataFormat(hsValue.getMonthAccumulation()),
+                    dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
+
+            data.putAll(temp);
+
+            SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+            Map<String,Object> temp2 = buildData(
+                    "keyword5",
+                    "keyword6",
+                    template,
+                    GroupMapping.CTB_1.getValue(),
+                    GroupMapping.CTB_1.getKey(),
+                    dataFormat(hxValue.getValue()),
+                    dataFormatPercent((double) (hxValue.getValue() - hxValue.getValueContrast()) / hxValue.getValueContrast()),
+                    dataFormat(hxValue.getMonthAccumulation()),
+                    dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
+
+            data.putAll(temp2);
+        }
+
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);
         arguments.put("page", "pages/statement/index");
-        Map data = new HashMap();
-        Map keyword1 = new HashMap();
-        keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate()));
-        Map keyword2 = new HashMap();
-        SummaryBean gmvValue = gmvService.querySummary().stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-        keyword2.put("value", "昨日(B2B)GMV " + dataFormat(gmvValue.getValue()) + " 较前日 " + dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
-                + "\n本月(B2B)GMV " + dataFormat(gmvValue.getMonthAccumulation())
-                + " 同比 " + dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
-        data.put("keyword1", keyword1);
-        data.put("keyword2", keyword2);
+
         arguments.put("data", data);
         ResponseEntity<String> response = restTemplate.postForEntity(url, arguments, String.class);
         log.info("sendGmv(" + openId + ") " + response.getStatusCodeValue() + " \n" + response.getBody());
+    }
+
+
+    private Map<String, Object> buildData(String key1, String key2, String template, String title, String service, String v1, String v2, String v3, String v4) {
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> keyword1 = new HashMap<>();
+        keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate(service)));
+        data.put(key1, keyword1);
+        Map<String, Object> keyword2 = new HashMap<>();
+        String str = String.format(template, title, v1, v2, title, v3, v4);
+        keyword2.put("value", str);
+        data.put(key2, keyword2);
+        return data;
     }
 
     private String dataFormatPercent(double p) {

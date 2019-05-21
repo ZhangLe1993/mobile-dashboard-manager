@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -25,9 +26,9 @@ public class GmvDataDateService {
     @Qualifier("gp")
     private DataSource gp;
 
-    @Cacheable(value = "gmv-last-data-date", key = "123")
-    public Date getLastDataDate() {
-        String sql = "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
+    @Cacheable(value = "gmv-last-data-date", key = "#service")
+    public Date getLastDataDate(String service) {
+        String sql = getSqlByService(service);
         Date dataDate = null;
         try {
             dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {
@@ -50,12 +51,23 @@ public class GmvDataDateService {
         }
     }
 
-    @CachePut(key = "123",value = "gmv-last-data-date")
-    public Date setLastDataDate(String date) throws ParseException {
-        if(!StringUtils.isEmpty(date)&&!"null".equalsIgnoreCase(date)){
+    private String getSqlByService(String service) {
+        if(!GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
+            String businessType = GroupMapping.CTB_0.getValue();
+            if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
+                businessType = GroupMapping.CTB_1.getValue();
+            }
+            return "select report_date from rpt.rpt_c2b_gmv_day where business_type ='" + businessType + "' order by report_date desc limit 1";
+        }
+        return "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
+    }
+
+    @CachePut(key = "#service",value = "gmv-last-data-date")
+    public Date setLastDataDate(String date, String service) throws ParseException {
+        if(!StringUtils.isEmpty(date) && !"null".equalsIgnoreCase(date)){
             return new Date(new SimpleDateFormat("yyyy-MM-dd").parse(date).getTime());
         }else{
-            return getLastDataDate();
+            return getLastDataDate(service);
         }
     }
 }
