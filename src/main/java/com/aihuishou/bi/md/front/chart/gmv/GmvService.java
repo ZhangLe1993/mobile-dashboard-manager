@@ -13,13 +13,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.stream.Collectors;
@@ -71,7 +65,7 @@ public class GmvService {
             Map<String, List<GmvDayData>> c = cC.get();//上月同一天
 
 
-            Map<String, String> icon = getIcons();
+            Map<String, String> icon = getIcons(service);
             List labels = new ArrayList(icon.keySet());
 
             // && ("gmv".equalsIgnoreCase(it) || !countImDisplay.contains(it))
@@ -111,6 +105,14 @@ public class GmvService {
                 return a1;
             });
             summaryList.add(0, sum);
+            Iterator<SummaryBean> it = summaryList.iterator();
+            while(it.hasNext()){
+                SummaryBean bean = it.next();
+                if(countImDisplay.contains(bean.getLabel())) {
+                    it.remove();
+                    break;
+                }
+            }
             return summaryList;
         } catch (InterruptedException e) {
             log.error("", e);
@@ -123,9 +125,10 @@ public class GmvService {
     /**
      * @return gmv_type->icon
      */
-    private Map<String, String> getIcons() {
+    private Map<String, String> getIcons(String service) {
+        String iconType = getIconType(service);
         Map<String, String> icons = new LinkedHashMap<>();
-        String sql = "select gmv_type,gmv_icon from gmv_type_config order by order_no";
+        String sql = "select gmv_type,gmv_icon from gmv_type_config_pro where icon_type = '" + iconType + "' order by order_no";
         try {
             List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
             for (Map<String, Object> r : rs) {
@@ -139,8 +142,8 @@ public class GmvService {
         return icons;
     }
 
-    public Set<String> allGmvType() {
-        Set<String> allTypes = getIcons().keySet();
+    public Set<String> allGmvType(String service) {
+        Set<String> allTypes = getIcons(service).keySet();
         allTypes.removeAll(banGmvType);
         return new HashSet(allTypes);
     }
@@ -160,8 +163,8 @@ public class GmvService {
         }
     }
 
-    private String buildStatement(String service, String gmvType) {
-        String change = "t1.gmv_type as gmvType,t1.settle_amount_num_day as amountDay,t1.settle_amount_num_to_now as amountToNow,";
+    /*private String buildStatement(String service, String gmvType) {
+        String change = "t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,";
         String mainTable = "rpt.rpt_b2b_gmv_day ";
         String targetTable = "dim.dim_b2b_gmv_target_month";
         String filter = "t1.gmv_type";
@@ -175,11 +178,50 @@ public class GmvService {
             targetTable = "dim.dim_c2b_gmv_target_month";
             filter = "t1.business_unit";
         }
-        return "select t1.report_date as reportDate," + change +
-                "t3.gmv_target as target from " + mainTable +
-                "t1 left join " + targetTable + " t3 on substr(t1.report_date,1,7)=t3.month " +
-                "and " + filter + "=t3.business_unit " +
-                "where t1.report_date between ? and ?" + (gmvType != null ? " and " + filter + "=? " : "");
+        return "SELECT t1.report_date AS reportDate," + change +
+                "t3.gmv_target AS target FROM " + mainTable +
+                "t1 LEFT JOIN " + targetTable + " t3 ON substr(t1.report_date,1,7)=t3.month " +
+                "AND " + filter + "=t3.business_unit " +
+                "WHERE t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND " + filter + "=? " : "");
+    }*/
+
+    private String buildStatement(String service, String gmvType) {
+        if(GroupMapping.BTB.getKey().equalsIgnoreCase(service.trim())) {
+            return "SELECT t1.report_date AS reportDate,t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,"+
+                    "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_b2b_gmv_day " +
+                    "t1 LEFT JOIN dim.dim_b2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
+                    "AND t1.gmv_type=t3.business_unit " +
+                    "WHERE t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.gmv_type=? " : "");
+
+        } else if(GroupMapping.CTB_0.getKey().equalsIgnoreCase(service.trim())) {
+
+            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,"+
+                    "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
+                    "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
+                    "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
+                    "WHERE t1.business_type='"+GroupMapping.CTB_0.getValue()+"' AND t1.report_date BETWEEN ? AND ? " + (gmvType != null ? " AND t1.business_unit=? " : "");
+        } else if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service.trim())) {
+
+            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_order_num_day AS amountDay,t1.settle_order_num_to_now AS amountToNow,"+
+                    "coalesce(t3.order_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
+                    "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
+                    "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
+                    "WHERE t1.business_type='"+GroupMapping.CTB_1.getValue()+"' AND t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.business_unit=? " : "");
+        }
+        return null;
+
+    }
+
+
+    private String getIconType(String service) {
+        if(GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
+            return GroupMapping.BTB.getValue();
+        } else if(GroupMapping.CTB_0.getKey().equalsIgnoreCase(service)) {
+            return GroupMapping.CTB_0.getValue();
+        } else if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
+            return GroupMapping.CTB_1.getValue();
+        }
+        return null;
     }
 
 

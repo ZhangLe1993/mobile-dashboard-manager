@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 @Slf4j
 @Component
@@ -29,6 +30,7 @@ public class GmvDataDateService {
     @Cacheable(value = "gmv-last-data-date", key = "#service")
     public Date getLastDataDate(String service) {
         String sql = getSqlByService(service);
+        //log.info("查询日期SQL：{}", sql);
         Date dataDate = null;
         try {
             dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {

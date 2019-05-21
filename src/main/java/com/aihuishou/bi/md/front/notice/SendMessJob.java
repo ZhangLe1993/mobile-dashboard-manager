@@ -19,7 +19,9 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +51,7 @@ public class SendMessJob {
     private GroupService groupService;
 
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
-    public void sendGmv() throws IOException, SQLException {
+    public void sendGmv() throws IOException, ParseException, SQLException {
         try {
             List<String> openIds = userService.allOpenIds();
             log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
@@ -61,7 +63,7 @@ public class SendMessJob {
         }
     }
 
-    public void sendGmv(String openId) throws IOException, SQLException {
+    public void sendGmv(String openId) throws IOException, ParseException, SQLException {
         RestTemplate restTemplate = new RestTemplate();
         String accessToken = sessionHelper.getAccessToken();
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
@@ -76,54 +78,66 @@ public class SendMessJob {
         if(group == null || group.size() == 0) {
             return;
         }
+
         Map<String,Object> data = new HashMap<>();
 
         String template = "昨日(%s)GMV: %s 较前日 %s \n 本月(%s)GMV: %s  同比: %s \n";
         if(group.contains(GroupMapping.BTB.getKey())) {
-            SummaryBean gmvValue = gmvService.querySummary(GroupMapping.BTB.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-            Map<String,Object> temp = buildData(
-                    "keyword1",
-                    "keyword2",
-                    template,
-                    GroupMapping.BTB.getKey(),
-                    GroupMapping.BTB.getKey(),
-                    dataFormat(gmvValue.getValue()),
-                    dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast()),
-                    dataFormat(gmvValue.getMonthAccumulation()),
-                    dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
-            data.putAll(temp);
+            Date date = gmvDataDateService.getLastDataDate(GroupMapping.BTB.getKey());
+            if(DateUtil.isYesterday(date)) {
+                SummaryBean gmvValue = gmvService.querySummary(GroupMapping.BTB.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+                Map<String,Object> temp = buildData(
+                        "keyword1",
+                        "keyword2",
+                        template,
+                        GroupMapping.BTB.getKey(),
+                        GroupMapping.BTB.getKey(),
+                        dataFormat(gmvValue.getValue()),
+                        dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast()),
+                        dataFormat(gmvValue.getMonthAccumulation()),
+                        dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
+                data.putAll(temp);
+            }
         }
 
         if(group.contains(GroupMapping.CTB.getKey())) {
-            SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-            Map<String,Object> temp = buildData(
-                    "keyword3",
-                    "keyword4",
-                    template,
-                    GroupMapping.CTB_0.getValue(),
-                    GroupMapping.CTB_0.getKey(),
-                    dataFormat(hsValue.getValue()),
-                    dataFormatPercent((double) (hsValue.getValue() - hsValue.getValueContrast()) / hsValue.getValueContrast()),
-                    dataFormat(hsValue.getMonthAccumulation()),
-                    dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
+            Date date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_0.getKey());
+            if(DateUtil.isYesterday(date)) {
+                SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+                Map<String,Object> temp = buildData(
+                        "keyword3",
+                        "keyword4",
+                        template,
+                        GroupMapping.CTB_0.getValue(),
+                        GroupMapping.CTB_0.getKey(),
+                        dataFormat(hsValue.getValue()),
+                        dataFormatPercent((double) (hsValue.getValue() - hsValue.getValueContrast()) / hsValue.getValueContrast()),
+                        dataFormat(hsValue.getMonthAccumulation()),
+                        dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
 
-            data.putAll(temp);
+                data.putAll(temp);
+            }
+            date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_1.getKey());
+            if(DateUtil.isYesterday(date)) {
+                SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+                Map<String,Object> temp2 = buildData(
+                        "keyword5",
+                        "keyword6",
+                        template,
+                        GroupMapping.CTB_1.getValue(),
+                        GroupMapping.CTB_1.getKey(),
+                        dataFormat(hxValue.getValue()),
+                        dataFormatPercent((double) (hxValue.getValue() - hxValue.getValueContrast()) / hxValue.getValueContrast()),
+                        dataFormat(hxValue.getMonthAccumulation()),
+                        dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
 
-            SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-            Map<String,Object> temp2 = buildData(
-                    "keyword5",
-                    "keyword6",
-                    template,
-                    GroupMapping.CTB_1.getValue(),
-                    GroupMapping.CTB_1.getKey(),
-                    dataFormat(hxValue.getValue()),
-                    dataFormatPercent((double) (hxValue.getValue() - hxValue.getValueContrast()) / hxValue.getValueContrast()),
-                    dataFormat(hxValue.getMonthAccumulation()),
-                    dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
-
-            data.putAll(temp2);
+                data.putAll(temp2);
+            }
         }
 
+        if(data.isEmpty()) {
+            return;
+        }
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);

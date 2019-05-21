@@ -123,7 +123,7 @@ public class GmvC {
     private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to){
         List<GmvDayData> data;
         if ("gmv".equalsIgnoreCase(gmvType)) {
-            data = gmvService.allGmvType().parallelStream().flatMap(t -> {
+            data = gmvService.allGmvType(service).parallelStream().flatMap(t -> {
                 return gmvService.queryDetail(from, to, t, service).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()

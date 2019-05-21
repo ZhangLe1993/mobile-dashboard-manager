@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
 
 @Slf4j
 @RestController
@@ -37,7 +38,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger")
-    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws IOException, SQLException {
+    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws IOException, ParseException, SQLException {
         if (!StringUtils.isEmpty(employeeNo)) {
             User u = userService.findByEmployeeNo(employeeNo);
             String openId = u.getOpenId();
@@ -48,7 +49,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger/test")
-    public void test() throws IOException, SQLException {
+    public void test() throws IOException, ParseException, SQLException {
         log.info("发送模板测试");
         sendMessJob.sendGmv("oYscn48qNNGWWYVfZLuXzfWKfFQc");
     }
