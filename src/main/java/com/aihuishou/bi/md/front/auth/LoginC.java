@@ -103,8 +103,13 @@ public class LoginC {
             log.warn("activate fail,openId:" + openId + " activationCode:" + activationCode);
             throw new ActivationFail();
         } else {
+            List<String> group = groupService.list(openId);
+            if(group == null || group.size() == 0) {
+                throw new UserBanException();
+            }
             response.setStatus(200);
             response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
+            response.setHeader("group", JSONArray.toJSONString(group));
         }
     }
 
