@@ -130,13 +130,14 @@ public class SendMessJob {
                 sb.append(temp);
             }
         }
+        if(sb.length() == 0) {
+            return;
+        }
         Map<String, Object> keyword2 = new HashMap<>();
         keyword2.put("value",sb.toString());
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
-        if(data.isEmpty()) {
-            return;
-        }
+
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);
