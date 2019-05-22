@@ -7,6 +7,7 @@ public class SummaryBean implements Serializable {
     private Long valueContrast=0L;//对比值
     private String icon="";//图标
     private String label="";//标签名
+    private String key="";//标签名
     private Long monthTarget=0L;//月目标
     private Long monthAccumulation=0L;//月累计值
     private Long monthAccumulationContrast=0L;//月累计对比值
@@ -41,6 +42,14 @@ public class SummaryBean implements Serializable {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public Long getMonthTarget() {

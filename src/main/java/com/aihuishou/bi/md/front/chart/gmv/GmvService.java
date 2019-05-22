@@ -38,6 +38,7 @@ public class GmvService {
         banGmvType.add("加盟店");
     }
 
+    private final static String banGmv = "加盟";
     private List<String> countImDisplay = new ArrayList<>();
     {
         countImDisplay.add("其他");
@@ -77,6 +78,7 @@ public class GmvService {
                     .map(it -> {
                         SummaryBean summaryBean = new SummaryBean();
                         summaryBean.setLabel(it);
+                        summaryBean.setKey(it);
                         summaryBean.setIcon(icon.get(it));
                         //当前值
                         summaryBean.setValue(a.get(it).get(0).getAmountDay());
@@ -97,12 +99,20 @@ public class GmvService {
             //sum
             SummaryBean sum = new SummaryBean();
             if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
-                sum.setLabel("GMV（不含加盟）");
+                sum.setKey("GMV（不含加盟）");
             } else {
-                sum.setLabel("GMV");
+                sum.setKey("GMV");
             }
+            sum.setLabel("GMV");
             sum.setIcon(icon.get("GMV"));
-            summaryList.stream().reduce(sum, (a1, a2) -> {
+            summaryList.stream()
+                    .filter(it -> {
+                        if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+                            return it.getLabel().contains(banGmv);
+                        }
+                        return true;
+                    })
+                    .reduce(sum, (a1, a2) -> {
                 a1.setValue(a1.getValue() + a2.getValue());
                 a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
                 if(a1.getMonthTarget() == -1) {
