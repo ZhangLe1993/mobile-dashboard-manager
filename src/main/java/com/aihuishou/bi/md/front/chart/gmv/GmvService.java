@@ -64,8 +64,10 @@ public class GmvService {
             Map<String, List<GmvDayData>> b = bC.get();//上一日
             Map<String, List<GmvDayData>> c = cC.get();//上月同一天
 
+            //实际用来分隔业务类型  B2b, 回收   ，换新
+            String iconType = getIconType(service);
 
-            Map<String, String> icon = getIcons(service);
+            Map<String, String> icon = getIcons(service, iconType);
             List labels = new ArrayList(icon.keySet());
 
             // && ("gmv".equalsIgnoreCase(it) || !countImDisplay.contains(it))
@@ -94,7 +96,11 @@ public class GmvService {
                     }).collect(Collectors.toList());
             //sum
             SummaryBean sum = new SummaryBean();
-            sum.setLabel("GMV");
+            if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+                sum.setLabel("GMV（不含加盟）");
+            } else {
+                sum.setLabel("GMV");
+            }
             sum.setIcon(icon.get("GMV"));
             summaryList.stream().reduce(sum, (a1, a2) -> {
                 a1.setValue(a1.getValue() + a2.getValue());
@@ -131,10 +137,9 @@ public class GmvService {
     /**
      * @return gmv_type->icon
      */
-    private Map<String, String> getIcons(String service) {
-        String iconType = getIconType(service);
+    private Map<String, String> getIcons(String service, String iconType) {
         Map<String, String> icons = new LinkedHashMap<>();
-        String sql = "select gmv_type,gmv_icon from gmv_type_config_pro where icon_type = '" + iconType + "' order by order_no";
+        String sql = "select gmv_type,gmv_icon,icon_type from gmv_type_config_pro where icon_type = '" + iconType + "' order by order_no";
         try {
             List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
             for (Map<String, Object> r : rs) {
@@ -149,7 +154,8 @@ public class GmvService {
     }
 
     public Set<String> allGmvType(String service) {
-        Set<String> allTypes = getIcons(service).keySet();
+        String iconType = getIconType(service);
+        Set<String> allTypes = getIcons(service, iconType).keySet();
         allTypes.removeAll(banGmvType);
         return new HashSet(allTypes);
     }
