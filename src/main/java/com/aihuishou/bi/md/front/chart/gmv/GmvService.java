@@ -99,7 +99,13 @@ public class GmvService {
             summaryList.stream().reduce(sum, (a1, a2) -> {
                 a1.setValue(a1.getValue() + a2.getValue());
                 a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
-                a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
+                if(a1.getMonthTarget() == -1) {
+                    a1.setMonthTarget(0L);
+                } else if(a2.getMonthTarget() == -1) {
+                    a1.setMonthTarget(a1.getMonthTarget());
+                } else {
+                    a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
+                }
                 a1.setMonthAccumulation(a1.getMonthAccumulation() + a2.getMonthAccumulation());
                 a1.setMonthAccumulationContrast(a1.getMonthAccumulationContrast() + a2.getMonthAccumulationContrast());
                 return a1;
