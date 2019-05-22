@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -49,5 +50,29 @@ public class GroupService {
             log.error("", e);
             return new ArrayList<>();
         }
+    }
+
+    public int insertUserGroup(String employeeNo, List<Integer> ids) throws SQLException {
+        String sql = "select group_id from user_group where employee_no=?";
+        List<Integer> exIds = new QueryRunner(dataSource).query(sql, new BeanListHandler<Integer>(Integer.class), employeeNo);
+        if(exIds != null && exIds.size() != 0) {
+            ids.removeAll(exIds);
+            if(ids.size() == 0) {
+                //已经有了这些权限
+                return 1;
+            }
+            sql = "insert into user_group(employee_no, group_id) values ('" + employeeNo + "',?);";
+            Object[][] params = new Object[ids.size()][1];
+            for (int i = 0; i < ids.size(); i++) {
+                params[i][0] = ids.get(i);
+            }
+            int [] res = new QueryRunner(dataSource).batch(sql, params);
+            if(res.length == ids.size()) {
+                //赋权成功
+                return 0;
+            }
+        }
+        //赋权失败
+        return 2;
     }
 }

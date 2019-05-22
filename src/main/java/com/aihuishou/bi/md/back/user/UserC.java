@@ -4,14 +4,15 @@ import com.aihuishou.bi.md.front.auth.Group;
 import com.aihuishou.bi.md.front.auth.GroupService;
 import com.aihuishou.bi.md.front.auth.User;
 import com.aihuishou.bi.md.front.auth.UserService;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
@@ -51,7 +52,7 @@ public class UserC {
     @RequestMapping(value = "/group/list", produces = "application/json;charset=utf-8")
     public ResponseEntity groups(@RequestParam(value = "employee_no", required = false) String employeeNo) throws SQLException {
         List<Group> groups = null;
-        if(Strings.isBlank(employeeNo)) {
+        if(StringUtils.isBlank(employeeNo)) {
             groups = groupService.all();
         } else {
             groups = groupService.getByEmployeeNo(employeeNo);
@@ -60,5 +61,28 @@ public class UserC {
         root.put("data", groups);
         root.put("total", groups.size());
         return new ResponseEntity(root, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/empower", produces = "application/json;charset=utf-8")
+    public ResponseEntity Authorized(@RequestBody String json) throws SQLException {
+        if(StringUtils.isBlank(json)) {
+            return new ResponseEntity(ImmutableMap.of("data","parameters is not allowed null"), HttpStatus.BAD_REQUEST);
+        }
+        JSONObject jsonObject = JSONObject.parseObject(json);
+        if(jsonObject != null) {
+            String employeeNo = jsonObject.getString("employee_no");
+            List<Integer> groupIds = JSONArray.parseArray(jsonObject.getString("group_ids"), Integer.class);
+            if(StringUtils.isNotBlank(employeeNo) && groupIds != null && groupIds.size() != 0) {
+                int res = groupService.insertUserGroup(employeeNo, groupIds);
+                if(res == 0) {
+                    return new ResponseEntity(ImmutableMap.of("data","success"), HttpStatus.OK);
+                } else if(res == 1) {
+                    return new ResponseEntity(ImmutableMap.of("data","all group has exists "), HttpStatus.ACCEPTED);
+                } else {
+                    return new ResponseEntity(ImmutableMap.of("data","authorized to user failure"), HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
+        }
+        return new ResponseEntity(ImmutableMap.of("data","parameters is not invalid "), HttpStatus.BAD_REQUEST);
     }
 }
