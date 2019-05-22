@@ -108,7 +108,7 @@ public class GmvService {
             summaryList.stream()
                     .filter(it -> {
                         if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
-                            return it.getLabel().contains(banGmv);
+                            return !it.getLabel().contains(banGmv);
                         }
                         return true;
                     })
