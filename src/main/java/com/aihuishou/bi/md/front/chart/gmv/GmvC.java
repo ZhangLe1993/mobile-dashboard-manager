@@ -78,7 +78,7 @@ public class GmvC {
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
         });
-        s1.setName("本月"/* + gmvType*/);
+        s1.setName("本月" + gmvType);
         dayLine.getSeries().add(s1);
         //本月累计
         LineChartData.Series acc1 = getFullMonthDayData(now, data, it -> {
@@ -90,7 +90,7 @@ public class GmvC {
         LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountDay();
         });
-        s2.setName("上月"/* + gmvType*/);
+        s2.setName("上月" + gmvType);
         if (s2.getData().size() > xArr.size()) {
             s2.setData(s2.getData().subList(0, xArr.size()));
         }
