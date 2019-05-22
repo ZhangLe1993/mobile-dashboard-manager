@@ -5,6 +5,7 @@ import com.aihuishou.bi.md.front.auth.GroupService;
 import com.aihuishou.bi.md.front.auth.User;
 import com.aihuishou.bi.md.front.auth.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,9 +49,14 @@ public class UserC {
     }
 
     @RequestMapping(value = "/group/list", produces = "application/json;charset=utf-8")
-    public ResponseEntity groups() {
-        List<Group> groups = groupService.all();
-        Map<String,Object> root=new HashMap<>();
+    public ResponseEntity groups(@RequestParam(value = "employee_no", required = false) String employeeNo) throws SQLException {
+        List<Group> groups = null;
+        if(Strings.isBlank(employeeNo)) {
+            groups = groupService.all();
+        } else {
+            groups = groupService.getByEmployeeNo(employeeNo);
+        }
+        Map<String,Object> root = new HashMap<>();
         root.put("data", groups);
         root.put("total", groups.size());
         return new ResponseEntity(root, HttpStatus.OK);

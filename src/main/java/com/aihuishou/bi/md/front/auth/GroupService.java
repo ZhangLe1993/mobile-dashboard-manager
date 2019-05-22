@@ -27,6 +27,20 @@ public class GroupService {
         return groups.parallelStream().map(Group::getGroupKey).collect(toList());
     }
 
+
+    public List<String> getFieldByEmployeeNo(String employeeNo) throws SQLException {
+        String sql = "SELECT u.group_id AS id,g.group_key AS groupKey,g.description FROM user_group u LEFT JOIN md.group g ON u.group_id=g.id WHERE u.employee_no = ?";
+        List<Group> groups = new QueryRunner(dataSource).query(sql, new BeanListHandler<Group>(Group.class), employeeNo);
+        return groups.parallelStream().map(Group::getGroupKey).collect(toList());
+    }
+
+    public List<Group> getByEmployeeNo(String employeeNo) throws SQLException {
+        String sql = "SELECT u.group_id AS id,g.group_key AS groupKey,g.description FROM user_group u LEFT JOIN md.group g ON u.group_id=g.id WHERE u.employee_no = ?";
+        List<Group> groups = new QueryRunner(dataSource).query(sql, new BeanListHandler<Group>(Group.class), employeeNo);
+        return groups == null ? new ArrayList<>() : groups;
+    }
+
+
     public List<Group> all() {
         String sql = "SELECT DISTINCT u.group_id AS id,g.group_key AS groupKey,g.description FROM user_group u LEFT JOIN md.group g ON u.group_id=g.id;";
         try {
