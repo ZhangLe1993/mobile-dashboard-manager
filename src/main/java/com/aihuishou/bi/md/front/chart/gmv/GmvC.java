@@ -78,19 +78,19 @@ public class GmvC {
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
         });
-        s1.setName("本月" + gmvType);
+        s1.setName("本月"/* + gmvType*/);
         dayLine.getSeries().add(s1);
         //本月累计
         LineChartData.Series acc1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountToNow();
         });
-        acc1.setName("本月"+gmvType+"累计");
+        acc1.setName("本月"/*+gmvType+"累计"*/);
         accLine.getSeries().add(acc1);
         //上月每天
         LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountDay();
         });
-        s2.setName("上月" + gmvType);
+        s2.setName("上月"/* + gmvType*/);
         if (s2.getData().size() > xArr.size()) {
             s2.setData(s2.getData().subList(0, xArr.size()));
         }
@@ -99,7 +99,7 @@ public class GmvC {
         LineChartData.Series acc2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountToNow();
         });
-        acc2.setName("上月" + gmvType+"累计");
+        acc2.setName("上月"/* + gmvType+"累计"*/);
         if (acc2.getData().size() > xArr.size()) {
             acc2.setData(acc2.getData().subList(0, xArr.size()));
         }
@@ -109,7 +109,7 @@ public class GmvC {
         LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
             return it.getAmountToNow();
         });
-        acc3.setName("去年同月" + gmvType+"累计");
+        acc3.setName("去年同月"/* + gmvType+"累计"*/);
         if (acc3.getData().size() > xArr.size()) {
             acc3.setData(acc3.getData().subList(0, xArr.size()));
         }
