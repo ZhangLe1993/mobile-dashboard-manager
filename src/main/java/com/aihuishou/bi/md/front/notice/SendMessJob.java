@@ -81,7 +81,7 @@ public class SendMessJob {
 
         Map<String,Object> data = new HashMap<>();
 
-        String template = "%s \n 昨日(%s)GMV: %s 较前日 %s \n 本月(%s)GMV: %s  同比: %s \n";
+        String template = "%s \n 昨日(%s)GMV: %s 较前日 %s \n 本月(%s)GMV: %s  同比: %s \n\n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
         if(group.contains(GroupMapping.BTB.getKey())) {

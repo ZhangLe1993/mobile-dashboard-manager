@@ -29,7 +29,7 @@ public class UserC {
     @Resource
     private GroupService groupService;
 
-    @RequestMapping(value = "/list", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "", produces = "application/json;charset=utf-8")
     public ResponseEntity users(@RequestParam(value = "key",required = false,defaultValue = "") String key,
                                 @RequestParam(value = "page_index",defaultValue = "1",required = false) int pageIndex,
                                 @RequestParam(value = "page_size",defaultValue = "10",required = false) int pageSize) {
