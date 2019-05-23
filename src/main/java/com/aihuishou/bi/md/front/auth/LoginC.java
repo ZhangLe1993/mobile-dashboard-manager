@@ -60,6 +60,7 @@ public class LoginC {
         }
         List<String> group = groupService.list(openId);
         if(group == null || group.size() == 0) {
+            log.warn("openId:"+openId+" hasn't any group");
             throw new UserBanException();
         }
         response.setHeader("sid", sid);
@@ -105,6 +106,7 @@ public class LoginC {
         } else {
             List<String> group = groupService.list(openId);
             if(group == null || group.size() == 0) {
+                log.warn("openId:"+openId+" hasn't any group");
                 throw new UserBanException();
             }
             response.setStatus(200);

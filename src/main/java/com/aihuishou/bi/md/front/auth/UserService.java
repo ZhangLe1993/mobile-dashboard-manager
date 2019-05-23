@@ -91,7 +91,7 @@ public class UserService {
             log.warn("UserNotActivationException openId:" + openId);
             throw new UserNotActivationException();
         } else if (!user.getEnable()) {//用户被禁止
-            log.warn("UserBanException openId:" + openId);
+            log.warn("checkActive openId:" + openId);
             throw new UserBanException();
         } else {
             return user;

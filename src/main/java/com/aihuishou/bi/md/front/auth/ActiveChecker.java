@@ -33,6 +33,7 @@ public class ActiveChecker implements HandlerInterceptor {
             throw new AuthException(404,"未识别的用户");
         } else {
             if (!user.getEnable()) {
+                log.warn("checkActive openId:" + user.getOpenId());
                 throw new UserBanException();
             }
             if (!user.getActive()) {
