@@ -80,7 +80,7 @@ public class GroupService {
             }
         }
         if(ids.size() == 0) {
-            //已经有了这些权限
+            //已经有了这些权限，或者全部删除完成
             return 1;
         }
         sql = "INSERT INTO user_group(employee_no, group_id) VALUES ('" + employeeNo + "',?);";

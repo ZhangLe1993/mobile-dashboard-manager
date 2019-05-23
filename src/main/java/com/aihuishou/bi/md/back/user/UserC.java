@@ -77,7 +77,7 @@ public class UserC {
                 if(res == 0) {
                     return new ResponseEntity(ImmutableMap.of("data","success"), HttpStatus.OK);
                 } else if(res == 1) {
-                    return new ResponseEntity(ImmutableMap.of("data","all group has exists "), HttpStatus.ACCEPTED);
+                    return new ResponseEntity(ImmutableMap.of("data","all group has exists or all group has removed "), HttpStatus.ACCEPTED);
                 } else {
                     return new ResponseEntity(ImmutableMap.of("data","authorized to user failure"), HttpStatus.INTERNAL_SERVER_ERROR);
                 }
