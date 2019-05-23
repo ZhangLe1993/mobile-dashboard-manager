@@ -1,11 +1,12 @@
 import React from 'react'
-import {Table, Input, Button, Tag} from 'antd';
+import {Table, Input, Button, Tag, Modal, Checkbox, Row, Col} from 'antd';
 import 'antd/dist/antd.css';
 import axios from 'axios'
 import ActBtn from './activation-code.jsx';
 import BanUserToggle from './ban-user.jsx';
 
 const Search = Input.Search;
+const CheckboxGroup = Checkbox.Group;
 
 class UserTable extends React.Component {
     constructor(pros) {
@@ -39,12 +40,40 @@ class UserTable extends React.Component {
                     key: 'enable',
                     render: (text, record) => <BanUserToggle uid={record.id} enable={record.enable}/>
                 },
+                // {
+                //     title: '权限',
+                //     dataIndex: 'group',
+                //     key: 'group',
+                //     render: (text, record) => <div>{record.id}</div>
+                // },
+                {
+                    title: '更新权限',
+                    dataIndex: 'action',
+                    key: 'action',
+                    render: (text, record) => (
+                     <span>
+                        <a href="javascript:;" onClick={() => {
+                            this.setState({ visible: true, selectedEmployeeNo: record.employeeNo }, () => {
+                                this.fetchGroupData(record.employeeNo);
+                            });
+                        }}>更新权限组</a>
+                      </span>
+                      )
+                },
             ],
             data: [],
             total: 1,
             searchKey: '',
             pageIndex: 1,
-            pageSize: 10
+            pageSize: 10,
+            confirmLoading: false, // 点击模态框确定loading状态
+            visible: false, // 模态框是否展示
+            allGroup: [
+            //   {id: 4, groupValue: 'C2B', desc: ''},
+            //   {id: 5, groupValue: 'B2B', desc: ''},
+            ],
+            personalGroup: [],
+            selectedEmployeeNo: null,
         };
     }
 
@@ -73,6 +102,7 @@ class UserTable extends React.Component {
 
     componentDidMount() {
         this.searchUser('', 1, 10);
+        this.fetchGroupData();
     }
 
     clearCache = () => {
@@ -87,7 +117,51 @@ class UserTable extends React.Component {
         });
     };
 
+    fetchGroupData = (no = null) => {
+        axios.get("/back/user/group/list", {
+            params: {
+                "employee_no": no
+            }
+        }).then(res => {
+            const data = res.data.data;
+            if (no) {
+                const checkedValue = data.map(it => it.id);
+                this.setState({ personalGroup: data, checkedValue });
+            } else {
+                this.setState({ allGroup: data });
+            }
+        });
+    }
+
+    updateGroupData = () => {
+        const { selectedEmployeeNo, checkedValue } = this.state;
+        axios.post("/back/user/empower", {
+            employee_no: selectedEmployeeNo,
+            group_ids: checkedValue,
+        }).then(res => {
+            this.setState({ confirmLoading: false });
+        }).catch(() => {
+            this.setState({ confirmLoading: false });
+        });
+    }
+
+    handleOk = () => {
+        this.setState({ visible: false, confirmLoading: true }, () => {
+          this.updateGroupData();
+        });
+    }
+
+    handleCancel = () => {
+        this.setState({ visible: false });
+    }
+
+    handleGroupChange = (checkedValue) => {
+        // console.log(checkedValue, '-checkedValue-');
+        this.setState({ checkedValue });
+    }
+
     render() {
+        const { allGroup, personalGroup, checkedValue } = this.state;
         return (
             <div>
                 <Button type="primary" onClick={this.clearCache}>清理缓存</Button>
@@ -101,6 +175,27 @@ class UserTable extends React.Component {
                         this.searchUser(this.state.searchKey, a, b)
                     }
                 }}/>
+                <Modal
+                  title="更新权限"
+                  cancelText="取消"
+                  okText="确定"
+                  visible={this.state.visible}
+                  confirmLoading={this.state.confirmLoading}
+                  onOk={this.handleOk}
+                  onCancel={this.handleCancel}
+                >
+                <CheckboxGroup onChange={this.handleGroupChange} value={checkedValue}>
+                  {
+                    allGroup && allGroup.map(it => {
+                      return (
+                        <Row key={it.groupKey} style={{ marginBottom: '10px'}}>
+                          <Col span={24}><Checkbox value={it.id}>{it.description}</Checkbox></Col>
+                        </Row>
+                      );
+                    })
+                  }
+                </CheckboxGroup>
+                </Modal>
             </div>
         )
     }
