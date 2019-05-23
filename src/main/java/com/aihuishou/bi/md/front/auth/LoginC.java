@@ -2,7 +2,6 @@ package com.aihuishou.bi.md.front.auth;
 
 import com.aihuishou.bi.md.front.auth.exception.ActivationFail;
 import com.aihuishou.bi.md.front.auth.exception.InvalidSidException;
-import com.aihuishou.bi.md.front.auth.exception.UserBanException;
 import com.aihuishou.bi.md.front.auth.exception.WeixinAuthFailException;
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,14 +57,10 @@ public class LoginC {
                 throw new WeixinAuthFailException();
             }
         }
-        List<String> group = groupService.list(openId);
-        if(group == null || group.size() == 0) {
-            log.warn("openId:"+openId+" hasn't any group");
-            throw new UserBanException();
-        }
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
         response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
+        List<String> group = groupService.list(openId);
         response.setHeader("group", JSONArray.toJSONString(group));
         response.setStatus(200);
     }
@@ -105,10 +100,6 @@ public class LoginC {
             throw new ActivationFail();
         } else {
             List<String> group = groupService.list(openId);
-            if(group == null || group.size() == 0) {
-                log.warn("openId:"+openId+" hasn't any group");
-                throw new UserBanException();
-            }
             response.setStatus(200);
             response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
             response.setHeader("group", JSONArray.toJSONString(group));
