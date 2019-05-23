@@ -100,6 +100,8 @@ public class GmvService {
             SummaryBean sum = new SummaryBean();
             if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
                 sum.setKey("GMV（不含加盟）");
+            } else if(GroupMapping.CTB_1.getValue().equalsIgnoreCase(iconType)) {
+                sum.setKey("单量");
             } else {
                 sum.setKey("GMV");
             }
