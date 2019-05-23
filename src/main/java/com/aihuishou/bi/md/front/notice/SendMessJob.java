@@ -81,7 +81,7 @@ public class SendMessJob {
 
         Map<String,Object> data = new HashMap<>();
 
-        String template = "%s \n 昨日(%s)GMV: %s 较前日 %s \n 本月(%s)GMV: %s  同比: %s \n\n";
+        String template = "昨日(%s)GMV: %s 较前日 %s \n本月(%s)GMV: %s  同比: %s \n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
         if(group.contains(GroupMapping.BTB.getKey())) {
@@ -89,7 +89,6 @@ public class SendMessJob {
             if(DateUtil.isYesterday(date)) {
                 SummaryBean gmvValue = gmvService.querySummary(GroupMapping.BTB.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
                 String temp = String.format(template
-                        , new SimpleDateFormat("yyyy-MM-dd").format(date)
                         , GroupMapping.BTB.getValue()
                         , dataFormat(gmvValue.getValue())
                         , dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
@@ -106,7 +105,6 @@ public class SendMessJob {
             if(DateUtil.isYesterday(date)) {
                 SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
                 String temp = String.format(template
-                        , new SimpleDateFormat("yyyy-MM-dd").format(date)
                         , GroupMapping.CTB_0.getValue()
                         , dataFormat(hsValue.getValue())
                         , dataFormatPercent((double) (hsValue.getValue() - hsValue.getValueContrast()) / hsValue.getValueContrast())
@@ -114,13 +112,13 @@ public class SendMessJob {
                         , dataFormat(hsValue.getMonthAccumulation())
                         , dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
                 sb.append(temp);
+                keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
             }
 
             date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_1.getKey());
             if(DateUtil.isYesterday(date)) {
                 SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
                 String temp = String.format(template
-                        , new SimpleDateFormat("yyyy-MM-dd").format(date)
                         , GroupMapping.CTB_1.getValue()
                         , dataFormat(hxValue.getValue())
                         , dataFormatPercent((double) (hxValue.getValue() - hxValue.getValueContrast()) / hxValue.getValueContrast())
@@ -128,6 +126,7 @@ public class SendMessJob {
                         , dataFormat(hxValue.getMonthAccumulation())
                         , dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
                 sb.append(temp);
+                keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
             }
         }
         if(sb.length() == 0) {
