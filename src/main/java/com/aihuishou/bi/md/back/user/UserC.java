@@ -72,7 +72,7 @@ public class UserC {
         if(jsonObject != null) {
             String employeeNo = jsonObject.getString("employee_no");
             List<Integer> groupIds = JSONArray.parseArray(jsonObject.getString("group_ids"), Integer.class);
-            if(StringUtils.isNotBlank(employeeNo) && groupIds != null && groupIds.size() != 0) {
+            if(StringUtils.isNotBlank(employeeNo) && groupIds != null) {
                 int res = groupService.insertUserGroup(employeeNo, groupIds);
                 if(res == 0) {
                     return new ResponseEntity(ImmutableMap.of("data","success"), HttpStatus.OK);
