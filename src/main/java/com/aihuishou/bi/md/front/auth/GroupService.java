@@ -29,7 +29,11 @@ public class GroupService {
     public List<String> list(String openId) throws SQLException {
         String sql = "SELECT u.group_id AS id,g.group_key AS groupKey,g.description FROM user_group u JOIN data_group g ON u.group_id=g.id WHERE u.employee_no = (SELECT employee_no FROM user WHERE open_id=?)";
         List<Group> groups = new QueryRunner(dataSource).query(sql, new BeanListHandler<Group>(Group.class), openId);
-        return groups.parallelStream().map(Group::getGroupKey).collect(toList());
+        List<String> g = groups.parallelStream().map(Group::getGroupKey).collect(toList());
+        if(g==null||g.size()==0){
+            log.warn("openId:"+openId+" has no group");
+        }
+        return g;
     }
 
 
