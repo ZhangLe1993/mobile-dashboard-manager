@@ -47,7 +47,7 @@ public class GroupService {
 
 
     public List<Group> all() {
-        String sql = "SELECT DISTINCT u.group_id AS id,g.group_key AS groupKey,g.description FROM user_group u JOIN data_group g ON u.group_id=g.id;";
+        String sql = "SELECT DISTINCT id,group_key AS groupKey,description FROM data_group;";
         try {
             return new QueryRunner(dataSource).query(sql, new BeanListHandler<Group>(Group.class));
         } catch (SQLException e) {
