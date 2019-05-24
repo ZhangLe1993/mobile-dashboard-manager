@@ -81,27 +81,16 @@ public class SendMessJob {
 
         Map<String,Object> data = new HashMap<>();
 
-        String template = "昨日(%s)GMV: %s 较前日 %s\n本月(%s)GMV: %s  同比: %s \n";
+        String template = "%s昨日GMV: %s %s\n%s本月GMV: %s %s\n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
         if(group.contains(GroupMapping.BTB.getKey())) {
-            Date date = gmvDataDateService.getLastDataDate(GroupMapping.BTB.getKey());
-            if(DateUtil.isYesterday(date)) {
-                SummaryBean gmvValue = gmvService.querySummary(GroupMapping.BTB.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-                String temp = String.format(template
-                        , GroupMapping.BTB.getValue()
-                        , dataFormat(gmvValue.getValue())
-                        , dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
-                        , GroupMapping.BTB.getValue()
-                        , dataFormat(gmvValue.getMonthAccumulation())
-                        , dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
-                sb.append(temp);
-                keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
-            }
+            fillTemplate(template, sb, keyword1, GroupMapping.BTB);
         }
 
         if(group.contains(GroupMapping.CTB.getKey())) {
-            Date date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_0.getKey());
+            fillTemplate(template, sb, keyword1, GroupMapping.CTB_0);
+            /*Date date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_0.getKey());
             if(DateUtil.isYesterday(date)) {
                 SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
                 String temp = String.format(template
@@ -113,9 +102,10 @@ public class SendMessJob {
                         , dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
                 sb.append(temp);
                 keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
-            }
+            }*/
+            fillTemplate(template, sb, keyword1, GroupMapping.CTB_1);
 
-            date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_1.getKey());
+            /*date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_1.getKey());
             if(DateUtil.isYesterday(date)) {
                 SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
                 String temp = String.format(template
@@ -127,7 +117,7 @@ public class SendMessJob {
                         , dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
                 sb.append(temp);
                 keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
-            }
+            }*/
         }
         if(sb.length() == 0) {
             return;
@@ -140,11 +130,27 @@ public class SendMessJob {
         arguments.put("touser", openId);
         arguments.put("form_id", formId);
         arguments.put("template_id", template_id);
-        arguments.put("page", "pages/statement/index");
+        arguments.put("page", "pages/index/index");
 
         arguments.put("data", data);
         ResponseEntity<String> response = restTemplate.postForEntity(url, arguments, String.class);
         log.info("sendGmv(" + openId + ") " + response.getStatusCodeValue() + " \n" + response.getBody());
+    }
+
+    private void fillTemplate(String template, StringBuilder sb, Map<String, Object> keyword1, GroupMapping groupMapping) throws ParseException {
+        Date date = gmvDataDateService.getLastDataDate(groupMapping.getKey());
+        if (DateUtil.isYesterday(date)) {
+            SummaryBean gmvValue = gmvService.querySummary(groupMapping.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
+            String temp = String.format(template
+                    , groupMapping.getValue()
+                    , dataFormat(gmvValue.getValue())
+                    , dataFormatPercent((double) (gmvValue.getValue() - gmvValue.getValueContrast()) / gmvValue.getValueContrast())
+                    , groupMapping.getValue()
+                    , dataFormat(gmvValue.getMonthAccumulation())
+                    , dataFormatPercent((double) (gmvValue.getMonthAccumulation() - gmvValue.getMonthAccumulationContrast()) / gmvValue.getMonthAccumulationContrast()));
+            sb.append(temp);
+            keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
+        }
     }
 
 
