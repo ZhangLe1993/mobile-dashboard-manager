@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,10 @@ public class GmvC {
         result.put("date", new SimpleDateFormat("yyyy-MM-dd").format(lastDataDate));
         result.put("date_progress", nf.format(monthProgress));
         result.put("data", summary);
+        result.put("panel_key","GMV");
+        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)){
+            result.put("panel_key","单量");
+        }
         return new ResponseEntity(result, HttpStatus.OK);
     }
 
