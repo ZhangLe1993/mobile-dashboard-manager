@@ -82,6 +82,7 @@ public class SendMessJob {
         Map<String,Object> data = new HashMap<>();
 
         String template = "%s昨日GMV: %s %s\n%s本月GMV: %s %s\n";
+        String templateB = "%s昨日单量: %s %s\n%s本月单量: %s %s\n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
         if(group.contains(GroupMapping.BTB.getKey())) {
@@ -90,34 +91,7 @@ public class SendMessJob {
 
         if(group.contains(GroupMapping.CTB.getKey())) {
             fillTemplate(template, sb, keyword1, GroupMapping.CTB_0);
-            /*Date date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_0.getKey());
-            if(DateUtil.isYesterday(date)) {
-                SummaryBean hsValue = gmvService.querySummary(GroupMapping.CTB_0.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-                String temp = String.format(template
-                        , GroupMapping.CTB_0.getValue()
-                        , dataFormat(hsValue.getValue())
-                        , dataFormatPercent((double) (hsValue.getValue() - hsValue.getValueContrast()) / hsValue.getValueContrast())
-                        , GroupMapping.CTB_0.getValue()
-                        , dataFormat(hsValue.getMonthAccumulation())
-                        , dataFormatPercent((double) (hsValue.getMonthAccumulation() - hsValue.getMonthAccumulationContrast()) / hsValue.getMonthAccumulationContrast()));
-                sb.append(temp);
-                keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
-            }*/
-            fillTemplate(template, sb, keyword1, GroupMapping.CTB_1);
-
-            /*date = gmvDataDateService.getLastDataDate(GroupMapping.CTB_1.getKey());
-            if(DateUtil.isYesterday(date)) {
-                SummaryBean hxValue = gmvService.querySummary(GroupMapping.CTB_1.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();
-                String temp = String.format(template
-                        , GroupMapping.CTB_1.getValue()
-                        , dataFormat(hxValue.getValue())
-                        , dataFormatPercent((double) (hxValue.getValue() - hxValue.getValueContrast()) / hxValue.getValueContrast())
-                        , GroupMapping.CTB_1.getValue()
-                        , dataFormat(hxValue.getMonthAccumulation())
-                        , dataFormatPercent((double) (hxValue.getMonthAccumulation() - hxValue.getMonthAccumulationContrast()) / hxValue.getMonthAccumulationContrast()));
-                sb.append(temp);
-                keyword1.put("value", new SimpleDateFormat("yyyy-MM-dd").format(date));
-            }*/
+            fillTemplate(templateB, sb, keyword1, GroupMapping.CTB_1);
         }
         if(sb.length() == 0) {
             return;
