@@ -1,8 +1,8 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import com.aihuishou.bi.md.core.QRunner;
 import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CachePut;
@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 
 @Slf4j
 @Component
@@ -33,7 +32,7 @@ public class GmvDataDateService {
         //log.info("查询日期SQL：{}", sql);
         Date dataDate = null;
         try {
-            dataDate = new QueryRunner(gp).query(sql, new ResultSetHandler<Date>() {
+            dataDate = new QRunner(gp).query(sql, new ResultSetHandler<Date>() {
                 @Override
                 public Date handle(ResultSet resultSet) throws SQLException {
                     resultSet.next();
