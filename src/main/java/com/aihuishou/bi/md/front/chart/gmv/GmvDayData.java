@@ -34,7 +34,7 @@ public class GmvDayData implements Serializable {
     }
 
     public Long getAmountToNow() {
-        return amountToNow;
+        return amountToNow==null?0:amountToNow;
     }
 
     public void setAmountToNow(Long amountToNow) {

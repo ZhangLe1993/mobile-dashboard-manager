@@ -1,5 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
+import com.aihuishou.bi.md.core.QRunner;
 import com.aihuishou.bi.md.front.cache.CacheMd;
 import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
@@ -179,35 +180,13 @@ public class GmvService {
         String sql = buildStatement(service, gmvType);
         Object[] params = gmvType == null ? new Object[]{from, to} : new Object[]{from, to, gmvType};
         try {
-            List<GmvDayData> arr = new QueryRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
+            List<GmvDayData> arr = new QRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
             return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
         } catch (SQLException e) {
             log.error("", e);
             return new ArrayList<>();
         }
     }
-
-    /*private String buildStatement(String service, String gmvType) {
-        String change = "t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,";
-        String mainTable = "rpt.rpt_b2b_gmv_day ";
-        String targetTable = "dim.dim_b2b_gmv_target_month";
-        String filter = "t1.gmv_type";
-        if(!GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
-            if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
-                change = "t1.business_unit AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,";
-            }else {
-                change = "t1.business_unit AS gmvType,t1.settle_order_num_day AS amountDay,t1.settle_order_num_to_now AS amountToNow,";
-            }
-            mainTable = "rpt.rpt_c2b_gmv_day ";
-            targetTable = "dim.dim_c2b_gmv_target_month";
-            filter = "t1.business_unit";
-        }
-        return "SELECT t1.report_date AS reportDate," + change +
-                "t3.gmv_target AS target FROM " + mainTable +
-                "t1 LEFT JOIN " + targetTable + " t3 ON substr(t1.report_date,1,7)=t3.month " +
-                "AND " + filter + "=t3.business_unit " +
-                "WHERE t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND " + filter + "=? " : "");
-    }*/
 
     private String buildStatement(String service, String gmvType) {
         if(GroupMapping.BTB.getKey().equalsIgnoreCase(service.trim())) {
