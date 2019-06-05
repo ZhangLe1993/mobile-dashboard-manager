@@ -42,7 +42,7 @@ public class CacheHolder {
                 while (true) {
                     try {
                         Thread.sleep(time2sleep);
-                        log.debug("cache holder refresh!!! "+key);
+                        log.info("cache holder refresh!!! "+key);
                         long from = System.currentTimeMillis();
                         Object v = method.invoke(o, objects);
                         time2sleep = Math.max(ttl.toMillis() - 2 * (System.currentTimeMillis() - from), MIN_TIME_SLEEP);
