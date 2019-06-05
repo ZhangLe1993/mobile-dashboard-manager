@@ -18,13 +18,13 @@ public class CacheHolder {
 
     public static final String CACHE_NAME = "cache-md";
 
-    private Map<String, Thread> cacheKeys = new ConcurrentHashMap<>();//防止有内存泄漏,需要设置上线大小
-    private final int MAX_MONITOR_SIZE = 10;
+    private Map<String, Thread> cacheKeys = new ConcurrentHashMap<>();//防止有内存泄漏,需要设置上线大小,避免同样的key重复监听
+    private final int MAX_MONITOR_SIZE = 30;
 
     @Value("#{T(java.time.Duration).parse('PT'+'${spring.cache.redis.time-to-live}')}")
     private Duration ttl;
 
-    private static final long MIN_TIME_SLEEP = 6 * 1000;//自动重刷新最少需要等待的时间
+    private static final long MIN_TIME_SLEEP = 60 * 1000;//自动重刷新最少需要等待的时间
 
     @Resource
     private CacheManager cacheManager;
