@@ -15,7 +15,7 @@ public class CacheMdKeyGenerator implements KeyGenerator {
 
     @Override
     public Object generate(Object o, Method method, Object... objects) {
-        StringBuilder key = new StringBuilder(o.getClass().getName() + "|" + method.getName());
+        StringBuilder key = new StringBuilder(o.getClass().getName() + "|" + method.getName()+"|");
         Parameter[] params = method.getParameters();
         for (Parameter p : params) {
             key.append(p.getName());
