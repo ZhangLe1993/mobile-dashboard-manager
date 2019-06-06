@@ -38,14 +38,12 @@ public class CacheHolder {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                long time2sleep = MIN_TIME_SLEEP;
+                long time2sleep = Math.max(ttl.toMillis() / 2, MIN_TIME_SLEEP);
                 while (true) {
                     try {
                         Thread.sleep(time2sleep);
-                        log.info("cache holder refresh!!! "+key);
-                        long from = System.currentTimeMillis();
+                        log.info("cache holder refresh!!! " + key);
                         Object v = method.invoke(o, objects);
-                        time2sleep = Math.max(ttl.toMillis() - 2 * (System.currentTimeMillis() - from), MIN_TIME_SLEEP);
                         Cache cache = cacheManager.getCache(CACHE_NAME);
                         cache.put(key, v);
                     } catch (Exception e) {
