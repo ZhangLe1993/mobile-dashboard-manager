@@ -29,7 +29,7 @@ public class GmvC {
     private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/summary")
-    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) {
+    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
         Date lastDataDate = gmvDataDateService.getLastDataDate(service);
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
@@ -51,7 +51,7 @@ public class GmvC {
 
     @RequestMapping("/month_day")
     public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType,
-                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) {
+                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
         List<LineChartData> lineCharts = new ArrayList<>();
         Date now = gmvDataDateService.getLastDataDate(service);//当前最新数据日期
         Calendar cal = Calendar.getInstance();
