@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -47,7 +48,7 @@ public class GmvService {
 
     // .parallelStream().filter(p -> !countImDisplay.contains(p.getGmvType())).collect(Collectors.toList())
     @CacheMd
-    public List<SummaryBean> querySummary(String service) {
+    public List<SummaryBean> querySummary(String service) throws ParseException {
         try {
             //最近2日，上月同比日
             Date dataDate = gmvDataDateService.getLastDataDate(service);//最新数据日期
