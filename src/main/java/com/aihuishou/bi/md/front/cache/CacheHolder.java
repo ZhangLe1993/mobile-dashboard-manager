@@ -46,7 +46,7 @@ public class CacheHolder {
                         Object v = method.invoke(o, objects);
                         Cache cache = cacheManager.getCache(CACHE_NAME);
                         cache.put(key, v);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         log.error("", e);
                     }
                 }
