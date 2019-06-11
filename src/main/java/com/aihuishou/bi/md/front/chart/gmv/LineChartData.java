@@ -2,13 +2,14 @@ package com.aihuishou.bi.md.front.chart.gmv;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LineChartData implements Serializable {
     private String title = "";
-    private List<String> xAxis = new ArrayList<>();
+    private Map<String,List<String>> xAxis = new HashMap<>();
     private List<Series> series = new ArrayList();
-
 
     public static class Series {
         private String name;
@@ -40,11 +41,11 @@ public class LineChartData implements Serializable {
         this.title = title;
     }
 
-    public List<String> getxAxis() {
+    public Map<String,List<String>> getxAxis() {
         return xAxis;
     }
 
-    public void setxAxis(List<String> xAxis) {
+    public void setxAxis(Map<String,List<String>> xAxis) {
         this.xAxis = xAxis;
     }
 
@@ -55,6 +56,10 @@ public class LineChartData implements Serializable {
     public void setSeries(List<Series> series) {
         this.series = series;
     }
+
+    /*public void putxAxis(String key, List<String> xAxi) {
+        xAxis.put(key, xAxi);
+    }*/
 
 }
 
