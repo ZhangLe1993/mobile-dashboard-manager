@@ -4,6 +4,7 @@ import com.aihuishou.bi.md.front.auth.SessionHelper;
 import com.aihuishou.bi.md.front.auth.User;
 import com.aihuishou.bi.md.front.auth.UserService;
 import com.aihuishou.bi.md.utils.HttpUtil;
+import com.google.common.collect.ImmutableMap;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -80,7 +81,9 @@ public class ActivationC {
         String url = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
         JSONObject params = new JSONObject();
         params.put("scene", scene);
-        //params.put("page","pages/statement/index");
+        params.put("page","pages/active-account/index");
+        //params.put("auto_color", false);
+        //params.put("line_color", ImmutableMap.of("r", 252,"g", 219,"b",0));
         byte[] result = HttpUtil.urlPost(url, params);
         //byte[] photo = result.getBytes();
         OutputStream os  = null;
