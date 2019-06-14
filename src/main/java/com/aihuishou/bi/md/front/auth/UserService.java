@@ -106,7 +106,12 @@ public class UserService {
      * @throws SQLException
      */
     public boolean active(String openId, String activationCode) throws SQLException {
-        String sql = "update user set open_id=?,active=1 where activation_code=? and active=0 and enable=1";
+        String sql = "select count(*) from user where open_id=? and activation_code=? and enable=1 and active=1;";
+        Long count = new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(), openId, activationCode);
+        if(count > 0) {
+            return true;
+        }
+        sql = "update user set open_id=?,active=1 where activation_code=? and active=0 and enable=1";
         return new QueryRunner(dataSource).update(sql, openId, activationCode) > 0;
     }
 
