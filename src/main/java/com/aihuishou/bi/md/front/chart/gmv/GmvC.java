@@ -1,6 +1,7 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
 import com.aihuishou.bi.md.front.notice.GroupMapping;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,8 @@ public class GmvC {
 
         //上月初至今的数据
         List<GmvDayData> data=getDetailData(gmvType, service, a,now);
+
+        //Map<String,List<String>> day
         LineChartData dayLine = new LineChartData();//每日数据折线
         LineChartData accLine = new LineChartData();//累计值数据折线
         if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
@@ -79,8 +82,9 @@ public class GmvC {
         }
 
         List<String> xArr = getFullMonthDate(now);
-        dayLine.setxAxis(xArr);//本月设X轴
-        accLine.setxAxis(xArr);
+        ;
+        dayLine.getxAxis().put("cur", xArr);//本月设X轴
+        accLine.getxAxis().put("cur", xArr);
         //本月每天
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
@@ -97,6 +101,12 @@ public class GmvC {
         });
         acc1.setName("本月"/*+gmvType+"累计"*/);
         accLine.getSeries().add(acc1);
+
+        List<String> xArr2 = getFullMonthDate(b);
+        dayLine.getxAxis().put("pre", xArr2);//本月设X轴
+        accLine.getxAxis().put("pre", xArr2);
+        //dayLine.setxAxis(xArr2);//本月设X轴
+        //accLine.setxAxis(xArr2);
         //上月每天
         LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountDay();
@@ -106,8 +116,8 @@ public class GmvC {
         } else {
             s2.setName("上月" + gmvType);
         }
-        if (s2.getData().size() > xArr.size()) {
-            s2.setData(s2.getData().subList(0, xArr.size()));
+        if (s2.getData().size() > xArr2.size()) {
+            s2.setData(s2.getData().subList(0, xArr2.size()));
         }
         dayLine.getSeries().add(s2);
         //上月累计
@@ -115,18 +125,24 @@ public class GmvC {
             return it.getAmountToNow();
         });
         acc2.setName("上月"/* + gmvType+"累计"*/);
-        if (acc2.getData().size() > xArr.size()) {
-            acc2.setData(acc2.getData().subList(0, xArr.size()));
+        if (acc2.getData().size() > xArr2.size()) {
+            acc2.setData(acc2.getData().subList(0, xArr2.size()));
         }
         accLine.getSeries().add(acc2);
+
+        List<String> xArr3 = getFullMonthDate(lastYearMonthEnd);
+        dayLine.getxAxis().put("last", xArr3);//本月设X轴
+        accLine.getxAxis().put("last", xArr3);
+        //dayLine.setxAxis(xArr3);//本月设X轴
+        //accLine.setxAxis(xArr3);
         //去年同月
         List<GmvDayData> lastYearData = getDetailData(gmvType, service, lastYearMonthBegin, lastYearMonthEnd);
         LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
             return it.getAmountToNow();
         });
         acc3.setName("去年同月"/* + gmvType+"累计"*/);
-        if (acc3.getData().size() > xArr.size()) {
-            acc3.setData(acc3.getData().subList(0, xArr.size()));
+        if (acc3.getData().size() > xArr3.size()) {
+            acc3.setData(acc3.getData().subList(0, xArr3.size()));
         }
         accLine.getSeries().add(acc3);
         //添加每天+累计的折线图
