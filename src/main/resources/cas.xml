@@ -26,8 +26,7 @@
         <security:intercept-url pattern="/**/*.png" access="permitAll()"/>
         <security:intercept-url pattern="/**/*.woff2" access="permitAll()"/>
         <security:intercept-url pattern="/**/*.ico" access="permitAll()"/>
-        <security:intercept-url pattern="/" access="permitAll()"/>
-        <!--<security:intercept-url pattern="/back/**" access="hasRole('ROLE_BACK')"/>-->
+        <security:intercept-url pattern="/back/**" access="hasRole('ROLE_BACK')"/>
         <security:custom-filter position="CAS_FILTER" ref="casFilter"/>
     </security:http>
 
