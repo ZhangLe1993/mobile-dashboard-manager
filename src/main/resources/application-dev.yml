@@ -11,8 +11,8 @@ spring:
     password: 123456
 
 server:
-  port: 8080
+  port: 8084
 
 cas:
    client:
-     host: http://10.25.169.133:8080
+     host: http://10.25.169.133:8084
