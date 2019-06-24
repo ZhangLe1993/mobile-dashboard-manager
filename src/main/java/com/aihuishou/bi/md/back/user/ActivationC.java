@@ -4,7 +4,6 @@ import com.aihuishou.bi.md.front.auth.SessionHelper;
 import com.aihuishou.bi.md.front.auth.User;
 import com.aihuishou.bi.md.front.auth.UserService;
 import com.aihuishou.bi.md.utils.HttpUtil;
-import com.google.common.collect.ImmutableMap;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -56,8 +55,8 @@ public class ActivationC {
         }
     }
 
-    @RequestMapping("/merge-activation-img/{uid}")
-    public void view(@PathVariable("uid") Long userId, HttpServletResponse response) throws WriterException, IOException, SQLException {
+    /*@RequestMapping("/merge-activation-img/{uid}")*/
+    public void view(/*@PathVariable("uid") */Long userId, HttpServletResponse response) throws WriterException, IOException, SQLException {
         User user = userService.findById(userId);
         String content = user.getActivationCode();//二维码内容 即 激活码
         Map hints = new HashMap();
@@ -74,7 +73,17 @@ public class ActivationC {
      * @throws Exception
      */
     @RequestMapping("/activation-img/{uid}")
-    public void mergeView(@PathVariable("uid") Long userId, HttpServletResponse response) throws Exception {
+    public void mergeView(@PathVariable("uid") Long userId,
+                          @RequestParam(value = "qr_code", required = false, defaultValue = "false") Boolean qrCode,
+                          HttpServletResponse response) throws Exception {
+        if(qrCode) {
+            view(userId, response);
+        } else {
+            abandonRuins(userId, response);
+        }
+    }
+
+    private void abandonRuins(Long userId, HttpServletResponse response) throws Exception {
         String accessToken = sessionHelper.getAccessToken();
         User user = userService.findById(userId);
         String scene = user.getActivationCode().replace("-", "").toUpperCase();//二维码内容 即 激活码
