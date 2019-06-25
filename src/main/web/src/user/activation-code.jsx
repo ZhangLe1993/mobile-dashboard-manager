@@ -1,12 +1,12 @@
 import React from 'react'
-import {Button, Confirm, Image, Modal} from 'semantic-ui-react'
+import {Button, Confirm, Image, Modal, Checkbox} from 'semantic-ui-react'
 import Axios from 'axios'
 
 class ActivationButton extends React.Component {
-
-    state = {updateConfirmOpen: false, activationCodeImgOpen: false, activationImg: ''};
-
-
+    constructor(props) {
+        super(props);
+        this.state = {updateConfirmOpen: false, activationCodeImgOpen: false, activationImg: '', qr_code: false };
+    }
     updateCodeOpen = () => this.setState({updateConfirmOpen: true});
     updateCodeClose = () => this.setState({updateConfirmOpen: false});
     updateCode = () => {
@@ -27,10 +27,18 @@ class ActivationButton extends React.Component {
 
     viewCode = () => {
         this.setState({
-            activationImg: '/back/activation-img/' + this.props.uid,
+            activationImg: `/back/activation-img/${this.props.uid}?qr_code=${this.state.qr_code}`,
+            // activationImg: '/back/activation-img/' + this.props.uid,
             activationCodeImgOpen: true
         });
     };
+
+    handleQRcodeChange = () => {
+        this.setState({
+            qr_code: !this.state.qr_code,
+            activationImg: `/back/activation-img/${this.props.uid}?qr_code=${!this.state.qr_code}`,
+        });
+    }
 
     renderBtn = () => {
         if (this.props.active) {
@@ -59,10 +67,10 @@ class ActivationButton extends React.Component {
                 <Confirm open={this.state.updateConfirmOpen} onCancel={this.updateCodeClose}
                          onConfirm={this.updateCode}/>
 
-                <Modal size='mini' open={this.state.activationCodeImgOpen} onClose={() => {
+                <Modal  size='mini' open={this.state.activationCodeImgOpen} onClose={() => {
                     this.setState({activationCodeImgOpen: false})
                 }}>
-                    <Modal.Header>激活码（激活成功后立即失效）</Modal.Header>
+                    <Modal.Header>激活码（激活成功后立即失效）<Checkbox toggle checked={this.state.qr_code} onChange={this.handleQRcodeChange} /></Modal.Header>
                     <Modal.Content>
                         <Image centered wrapped size='medium' src={this.state.activationImg}/>
                     </Modal.Content>

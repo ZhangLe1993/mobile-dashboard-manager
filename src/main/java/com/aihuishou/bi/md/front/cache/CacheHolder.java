@@ -48,7 +48,7 @@ public class CacheHolder {
                         time2sleep = Math.max(ttl.toMillis() - 2 * (System.currentTimeMillis() - from), MIN_TIME_SLEEP);
                         Cache cache = cacheManager.getCache(CACHE_NAME);
                         cache.put(key, v);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         log.error("", e);
                     }
                 }

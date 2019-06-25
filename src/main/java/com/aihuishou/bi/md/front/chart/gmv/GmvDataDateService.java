@@ -27,7 +27,8 @@ public class GmvDataDateService {
     private DataSource gp;
 
     @Cacheable(value = "gmv-last-data-date", key = "#service")
-    public Date getLastDataDate(String service) {
+    public Date getLastDataDate(String service) throws ParseException {
+        //return new Date(new SimpleDateFormat("yyyy-MM-dd").parse("2019-02-28").getTime());
         String sql = getSqlByService(service);
         //log.info("查询日期SQL：{}", sql);
         Date dataDate = null;
@@ -67,6 +68,7 @@ public class GmvDataDateService {
     public Date setLastDataDate(String date, String service) throws ParseException {
         if(!StringUtils.isEmpty(date) && !"null".equalsIgnoreCase(date)){
             return new Date(new SimpleDateFormat("yyyy-MM-dd").parse(date).getTime());
+            //return new Date(new SimpleDateFormat("yyyy-MM-dd").parse("2019-02-28").getTime());
         }else{
             return getLastDataDate(service);
         }
