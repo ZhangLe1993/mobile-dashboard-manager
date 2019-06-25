@@ -82,9 +82,10 @@ public class GmvC {
         }
 
         List<String> xArr = getFullMonthDate(now);
-        ;
-        dayLine.getxAxis().put("cur", xArr);//本月设X轴
-        accLine.getxAxis().put("cur", xArr);
+        dayLine.setxAxis(xArr);
+        accLine.setxAxis(xArr);
+        dayLine.getxAxisArr().put("cur", xArr);//本月设X轴
+        accLine.getxAxisArr().put("cur", xArr);
         //本月每天
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
@@ -103,8 +104,8 @@ public class GmvC {
         accLine.getSeries().add(acc1);
 
         List<String> xArr2 = getFullMonthDate(b);
-        dayLine.getxAxis().put("pre", xArr2);//本月设X轴
-        accLine.getxAxis().put("pre", xArr2);
+        dayLine.getxAxisArr().put("pre", xArr2);//本月设X轴
+        accLine.getxAxisArr().put("pre", xArr2);
         //dayLine.setxAxis(xArr2);//本月设X轴
         //accLine.setxAxis(xArr2);
         //上月每天
@@ -131,10 +132,10 @@ public class GmvC {
         accLine.getSeries().add(acc2);
 
         List<String> xArr3 = getFullMonthDate(lastYearMonthEnd);
-        dayLine.getxAxis().put("last", xArr3);//本月设X轴
-        accLine.getxAxis().put("last", xArr3);
-        //dayLine.setxAxis(xArr3);//本月设X轴
-        //accLine.setxAxis(xArr3);
+        dayLine.getxAxisArr().put("last", xArr3);//本月设X轴
+        accLine.getxAxisArr().put("last", xArr3);
+        dayLine.setxAxis(xArr3);//本月设X轴
+        accLine.setxAxis(xArr3);
         //去年同月
         List<GmvDayData> lastYearData = getDetailData(gmvType, service, lastYearMonthBegin, lastYearMonthEnd);
         LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
