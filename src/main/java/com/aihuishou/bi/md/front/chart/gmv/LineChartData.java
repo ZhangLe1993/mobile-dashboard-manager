@@ -8,7 +8,8 @@ import java.util.Map;
 
 public class LineChartData implements Serializable {
     private String title = "";
-    private Map<String,List<String>> xAxis = new HashMap<>();
+    private List<String> xAxis = new ArrayList<>();
+    private Map<String,List<String>> xAxisArr = new HashMap<>();
     private List<Series> series = new ArrayList();
 
     public static class Series {
@@ -41,12 +42,20 @@ public class LineChartData implements Serializable {
         this.title = title;
     }
 
-    public Map<String,List<String>> getxAxis() {
+    public List<String> getxAxis() {
         return xAxis;
     }
 
-    public void setxAxis(Map<String,List<String>> xAxis) {
+    public void setxAxis(List<String> xAxis) {
         this.xAxis = xAxis;
+    }
+
+    public Map<String, List<String>> getxAxisArr() {
+        return xAxisArr;
+    }
+
+    public void setxAxisArr(Map<String, List<String>> xAxisArr) {
+        this.xAxisArr = xAxisArr;
     }
 
     public List<Series> getSeries() {
