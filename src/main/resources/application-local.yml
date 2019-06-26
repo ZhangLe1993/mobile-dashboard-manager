@@ -1,0 +1,18 @@
+app_id: wxf0ab04a0b0e1c765
+app_secret: 82b6b9dc173882b149062f6a452ed3d4
+spring:
+  datasource:
+    url: jdbc:mysql://10.81.44.187:3306/md?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+    username: root
+    password: root
+  redis:
+    host: 10.81.44.187
+    db: 1
+    password: 123456
+
+server:
+  port: 8080
+
+cas:
+   client:
+     host: http://10.25.169.133:8084
