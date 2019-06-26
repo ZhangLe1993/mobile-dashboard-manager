@@ -48,6 +48,7 @@ public class LoginC {
         }
         if (StringUtils.isEmpty(openId)) {
             sid = getSid(code);
+            openId = sessionHelper.getOpenId(sid);
         }
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
