@@ -7,7 +7,7 @@ spring:
     password: root
   redis:
     host: 10.81.44.187
-    db: 1
+    database: 1
     password: 123456
 
 server:

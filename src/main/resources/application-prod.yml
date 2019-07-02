@@ -4,7 +4,7 @@ spring:
     username: mobi_dashboard
   redis:
     host: r-bp1df75eafff5994.redis.rds.aliyuncs.com
-    db: 14
+    database: 14
 
 server:
   port: 8080
