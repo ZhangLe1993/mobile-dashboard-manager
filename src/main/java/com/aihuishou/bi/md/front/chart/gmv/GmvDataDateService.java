@@ -1,6 +1,7 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
 import com.aihuishou.bi.md.core.QRunner;
+import com.aihuishou.bi.md.front.cache.CacheHolder;
 import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -26,7 +27,7 @@ public class GmvDataDateService {
     @Qualifier("gp")
     private DataSource gp;
 
-    @Cacheable(value = "gmv-last-data-date", key = "#service")
+    @Cacheable(value = CacheHolder.GMV_LAST_DATA_DATE_CACHE_NAME, key = "#service")
     public Date getLastDataDate(String service) throws ParseException {
         //return new Date(new SimpleDateFormat("yyyy-MM-dd").parse("2019-02-28").getTime());
         String sql = getSqlByService(service);
@@ -64,7 +65,7 @@ public class GmvDataDateService {
         return "select report_date from rpt.rpt_b2b_gmv_day order by report_date desc limit 1";
     }
 
-    @CachePut(key = "#service",value = "gmv-last-data-date")
+    @CachePut(key = "#service",value = CacheHolder.GMV_LAST_DATA_DATE_CACHE_NAME)
     public Date setLastDataDate(String date, String service) throws ParseException {
         if(!StringUtils.isEmpty(date) && !"null".equalsIgnoreCase(date)){
             return new Date(new SimpleDateFormat("yyyy-MM-dd").parse(date).getTime());

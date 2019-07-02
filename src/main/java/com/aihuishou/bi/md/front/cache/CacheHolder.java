@@ -18,6 +18,8 @@ public class CacheHolder {
 
     public static final String CACHE_NAME = "cache-md";
 
+    public static final String GMV_LAST_DATA_DATE_CACHE_NAME = "gmv-last-data-date";
+
     private Map<String, Thread> cacheKeys = new ConcurrentHashMap<>();//防止有内存泄漏,需要设置上线大小,避免同样的key重复监听
     private final int MAX_MONITOR_SIZE = 30;
 

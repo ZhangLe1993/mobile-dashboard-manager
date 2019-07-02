@@ -30,6 +30,7 @@ public class HomeC {
     @RequestMapping("/clear_md")
     public void clearMd() {
         cacheManager.getCache(CacheHolder.CACHE_NAME).clear();
+        cacheManager.getCache(CacheHolder.GMV_LAST_DATA_DATE_CACHE_NAME).clear();
     }
 
     @RequestMapping("/gmv_data_date")
