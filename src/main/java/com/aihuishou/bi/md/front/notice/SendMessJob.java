@@ -12,7 +12,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -170,6 +169,7 @@ public class SendMessJob {
             for (int i = 0; i < arr.size(); i++) {
                 FormId f = arr.get(i);
                 if (f.getExpireTime() >= System.currentTimeMillis()) {//已过期
+                    log.info("从集合【{}】中删除过期的formId【{}】", key, f.getValue());
                     redisTemplate.opsForList().remove(key, 1, f.getValue());
                     total--;
                 }
