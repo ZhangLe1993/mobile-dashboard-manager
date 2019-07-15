@@ -83,6 +83,7 @@ public class LoginC {
     @RequestMapping("/active")
     public void active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid", required = false) String sid,
                        @RequestParam(value = "sid_code", required = false) String sidCode, HttpServletResponse response) throws SQLException, IOException {
+        log.info("code:"+activationCode+" sid:"+sid+" sid_code:"+sidCode);
         if (!StringUtils.isEmpty(sidCode)) {
             sid = getSid(sidCode);
         }
