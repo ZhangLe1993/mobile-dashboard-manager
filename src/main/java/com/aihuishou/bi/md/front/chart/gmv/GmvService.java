@@ -1,6 +1,7 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
 import com.aihuishou.bi.md.core.QRunner;
+import com.aihuishou.bi.md.core.enums.Total;
 import com.aihuishou.bi.md.front.cache.CacheMd;
 import com.aihuishou.bi.md.front.notice.GroupMapping;
 import lombok.extern.slf4j.Slf4j;
@@ -98,6 +99,29 @@ public class GmvService {
                         }
                         return summaryBean;
                     }).collect(Collectors.toList());
+            //是否有其他统计字段 需要另外加和的分类
+            List<String> list = Total.listTotal(service);
+            if(list.size() > 0) {
+                list.forEach(p -> {
+                    //获取子类型
+                    Total type = Total.getTotalType(p);
+                    Set<String> childrenLabel = type.getChild();
+                    SummaryBean sum = new SummaryBean();
+                    sum.setKey(p);
+                    sum.setLabel(p);
+                    sum.setIcon(icon.get(p));
+                    summaryList.stream()
+                            .filter(it -> {
+                                if(childrenLabel.contains(it.getLabel())) {
+                                    sum.getChildren().add(it);
+                                    return true;
+                                }
+                                return false;
+                            })
+                            .reduce(sum, this::getSummaryBean);
+                    summaryList.add(0, sum);
+                });
+            }
             //sum
             SummaryBean sum = new SummaryBean();
             if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
@@ -116,36 +140,29 @@ public class GmvService {
                         }
                         return true;
                     })
-                    .reduce(sum, (a1, a2) -> {
-                a1.setValue(a1.getValue() + a2.getValue());
-                a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
-                if(a1.getMonthTarget() == -1) {
-                    a1.setMonthTarget(0L);
-                } else if(a2.getMonthTarget() == -1) {
-                    a1.setMonthTarget(a1.getMonthTarget());
-                } else {
-                    a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
-                }
-                a1.setMonthAccumulation(a1.getMonthAccumulation() + a2.getMonthAccumulation());
-                a1.setMonthAccumulationContrast(a1.getMonthAccumulationContrast() + a2.getMonthAccumulationContrast());
-                return a1;
-            });
+                    .reduce(sum, this::getSummaryBean);
             summaryList.add(0, sum);
-            Iterator<SummaryBean> it = summaryList.iterator();
-            while(it.hasNext()){
-                SummaryBean bean = it.next();
-                if(countImDisplay.contains(bean.getLabel())) {
-                    it.remove();
-                    break;
-                }
-            }
+            summaryList.removeIf(bean -> countImDisplay.contains(bean.getLabel()) || Total.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || Total.STORE_BUSINESS.getChild().contains(bean.getLabel()));
             return summaryList;
-        } catch (InterruptedException e) {
-            log.error("", e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             log.error("", e);
         }
         return new ArrayList<>();
+    }
+
+    private SummaryBean getSummaryBean(SummaryBean a1, SummaryBean a2) {
+        a1.setValue(a1.getValue() + a2.getValue());
+        a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
+        if(a1.getMonthTarget() == -1) {
+            a1.setMonthTarget(0L);
+        } else if(a2.getMonthTarget() == -1) {
+            a1.setMonthTarget(a1.getMonthTarget());
+        } else {
+            a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
+        }
+        a1.setMonthAccumulation(a1.getMonthAccumulation() + a2.getMonthAccumulation());
+        a1.setMonthAccumulationContrast(a1.getMonthAccumulationContrast() + a2.getMonthAccumulationContrast());
+        return a1;
     }
 
     /**
