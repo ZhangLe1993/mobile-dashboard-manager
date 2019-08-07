@@ -43,6 +43,7 @@ public class GmvService {
 
     private final static String banGmv = "加盟";
     private List<String> countImDisplay = new ArrayList<>();
+
     {
         countImDisplay.add("其他");
     }
@@ -70,14 +71,12 @@ public class GmvService {
 
             //实际用来分隔业务类型  B2b, 回收   ，换新
             String iconType = getIconType(service);
-
-            Map<String, String> icon = getIcons(service, iconType);
+            Map<String, String> icon = getIcons(iconType);
             List labels = new ArrayList(icon.keySet());
 
             // && ("gmv".equalsIgnoreCase(it) || !countImDisplay.contains(it))
-            List<SummaryBean> summaryList = a.keySet().stream()
+            final List<SummaryBean> summaryList = a.keySet().stream()//接口要返回的结果
                     .filter(it -> labels.contains(it))
-                    .sorted((c1, c2) -> labels.indexOf(c1) - labels.indexOf(c2))
                     .map(it -> {
                         SummaryBean summaryBean = new SummaryBean();
                         summaryBean.setLabel(it);
@@ -101,7 +100,7 @@ public class GmvService {
                     }).collect(Collectors.toList());
             //是否有其他统计字段 需要另外加和的分类
             List<String> list = Total.listTotal(service);
-            if(list.size() > 0) {
+            if (list.size() > 0) {
                 list.forEach(p -> {
                     //获取子类型
                     Total type = Total.getTotalType(p);
@@ -112,7 +111,7 @@ public class GmvService {
                     sum.setIcon(icon.get(p));
                     summaryList.stream()
                             .filter(it -> {
-                                if(childrenLabel.contains(it.getLabel())) {
+                                if (childrenLabel.contains(it.getLabel())) {
                                     sum.getChildren().add(it);
                                     return true;
                                 }
@@ -124,9 +123,9 @@ public class GmvService {
             }
             //sum
             SummaryBean sum = new SummaryBean();
-            if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+            if (GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
                 sum.setKey("GMV（不含加盟）");
-            } else if(GroupMapping.CTB_1.getValue().equalsIgnoreCase(iconType)) {
+            } else if (GroupMapping.CTB_1.getValue().equalsIgnoreCase(iconType)) {
                 sum.setKey("单量");
             } else {
                 sum.setKey("GMV");
@@ -135,7 +134,7 @@ public class GmvService {
             sum.setIcon(icon.get("GMV"));
             summaryList.stream()
                     .filter(it -> {
-                        if(GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+                        if (GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
                             return !it.getLabel().contains(banGmv);
                         }
                         return true;
@@ -143,6 +142,11 @@ public class GmvService {
                     .reduce(sum, this::getSummaryBean);
             summaryList.add(0, sum);
             summaryList.removeIf(bean -> countImDisplay.contains(bean.getLabel()) || Total.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || Total.STORE_BUSINESS.getChild().contains(bean.getLabel()));
+            //排序
+            Collections.sort(summaryList, (c1, c2) -> labels.indexOf(c1.getKey()) - labels.indexOf(c2.getKey()));
+            summaryList.stream().filter(it -> it.getChildren().size() > 0).forEach(it -> {
+                Collections.sort(it.getChildren(), (c1, c2) -> labels.indexOf(c1.getKey()) - labels.indexOf(c2.getKey()));
+            });
             return summaryList;
         } catch (InterruptedException | ExecutionException e) {
             log.error("", e);
@@ -153,9 +157,9 @@ public class GmvService {
     private SummaryBean getSummaryBean(SummaryBean a1, SummaryBean a2) {
         a1.setValue(a1.getValue() + a2.getValue());
         a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
-        if(a1.getMonthTarget() == -1) {
+        if (a1.getMonthTarget() == -1) {
             a1.setMonthTarget(0L);
-        } else if(a2.getMonthTarget() == -1) {
+        } else if (a2.getMonthTarget() == -1) {
             a1.setMonthTarget(a1.getMonthTarget());
         } else {
             a1.setMonthTarget(a1.getMonthTarget() + a2.getMonthTarget());
@@ -168,9 +172,9 @@ public class GmvService {
     /**
      * @return gmv_type->icon
      */
-    private Map<String, String> getIcons(String service, String iconType) {
+    private Map<String, String> getIcons(String iconType) {
         Map<String, String> icons = new LinkedHashMap<>();
-        String sql = "select gmv_type,gmv_icon,icon_type from gmv_type_config_pro where icon_type = '" + iconType + "' order by order_no";
+        String sql = "select gmv_type,gmv_icon,icon_type from gmv_type_config_pro where enable=true and icon_type = '" + iconType + "' order by order_no";
         try {
             List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
             for (Map<String, Object> r : rs) {
@@ -185,12 +189,10 @@ public class GmvService {
     }
 
     public Set<String> allGmvType(String service) {
-        String iconType = getIconType(service);
-        Set<String> allTypes = getIcons(service, iconType).keySet();
+        Set<String> allTypes = getIcons(getIconType(service)).keySet();
         allTypes.removeAll(banGmvType);
         return new HashSet(allTypes);
     }
-
 
 
     @CacheMd
@@ -207,27 +209,27 @@ public class GmvService {
     }
 
     private String buildStatement(String service, String gmvType) {
-        if(GroupMapping.BTB.getKey().equalsIgnoreCase(service.trim())) {
-            return "SELECT t1.report_date AS reportDate,t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,"+
+        if (GroupMapping.BTB.getKey().equalsIgnoreCase(service.trim())) {
+            return "SELECT t1.report_date AS reportDate,t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow," +
                     "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_b2b_gmv_day " +
                     "t1 LEFT JOIN dim.dim_b2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.gmv_type=t3.business_unit " +
                     "WHERE t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.gmv_type=? " : "");
 
-        } else if(GroupMapping.CTB_0.getKey().equalsIgnoreCase(service.trim())) {
+        } else if (GroupMapping.CTB_0.getKey().equalsIgnoreCase(service.trim())) {
 
-            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow,"+
+            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow," +
                     "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
                     "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
-                    "WHERE t1.business_type='"+GroupMapping.CTB_0.getValue()+"' AND t1.report_date BETWEEN ? AND ? " + (gmvType != null ? " AND t1.business_unit=? " : "");
-        } else if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service.trim())) {
+                    "WHERE t1.business_type='" + GroupMapping.CTB_0.getValue() + "' AND t1.report_date BETWEEN ? AND ? " + (gmvType != null ? " AND t1.business_unit=? " : "");
+        } else if (GroupMapping.CTB_1.getKey().equalsIgnoreCase(service.trim())) {
 
-            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_order_num_day AS amountDay,t1.settle_order_num_to_now AS amountToNow,"+
+            return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_order_num_day AS amountDay,t1.settle_order_num_to_now AS amountToNow," +
                     "coalesce(t3.order_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
                     "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
-                    "WHERE t1.business_type='"+GroupMapping.CTB_1.getValue()+"' AND t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.business_unit=? " : "");
+                    "WHERE t1.business_type='" + GroupMapping.CTB_1.getValue() + "' AND t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.business_unit=? " : "");
         }
         return null;
 
@@ -235,11 +237,11 @@ public class GmvService {
 
 
     private String getIconType(String service) {
-        if(GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
+        if (GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
             return GroupMapping.BTB.getValue();
-        } else if(GroupMapping.CTB_0.getKey().equalsIgnoreCase(service)) {
+        } else if (GroupMapping.CTB_0.getKey().equalsIgnoreCase(service)) {
             return GroupMapping.CTB_0.getValue();
-        } else if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
+        } else if (GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
             return GroupMapping.CTB_1.getValue();
         }
         return null;

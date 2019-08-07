@@ -4,11 +4,14 @@ import com.aihuishou.bi.md.front.notice.GroupMapping;
 
 import java.util.*;
 
+/**
+ * 手机看版GMV合计指标，指标枚举及父子关系
+ */
 public enum Total {
 
-    BTB_GMV("B2B", "GMV", new HashSet<>(Arrays.asList("区域成色机", "爱机汇", "备件库", "尾品汇", "笔记本", "海外"))),
-    MERCHANT_SERVICES("B2B", "商家业务", new HashSet<>(Arrays.asList("区域成色机", "爱机汇"))),
-    STORE_BUSINESS("B2B", "到店业务", new HashSet<>(Arrays.asList("备件库", "尾品汇"))),
+    BTB_GMV("B2B", "GMV", new HashSet<>(Arrays.asList("尾品汇", "企业服务", "海外"))),
+    MERCHANT_SERVICES("B2B", "商家业务", new HashSet<>(Arrays.asList("OPT", "POP"))),
+    STORE_BUSINESS("B2B", "到店业务", new HashSet<>(Arrays.asList("爱机汇", "店员宝"))),
     CTB_0_GMV("C2B_0", "GMV", new HashSet<>()),
     CTB_1_GMV("C2B_1", "GMV", new HashSet<>());
 
@@ -49,8 +52,9 @@ public enum Total {
     }
 
     public static List<String> listTotal(String service) {
-        if(service.equalsIgnoreCase(GroupMapping.BTB.getKey()))
+        if(service.equalsIgnoreCase(GroupMapping.BTB.getKey())){
             return new ArrayList<>(Arrays.asList(Total.MERCHANT_SERVICES.getType(), Total.STORE_BUSINESS.getType()));
+        }
         return new ArrayList<>();
     }
 

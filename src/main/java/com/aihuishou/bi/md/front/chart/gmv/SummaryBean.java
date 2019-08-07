@@ -14,7 +14,7 @@ public class SummaryBean implements Serializable {
     private Long monthAccumulation=0L;//月累计值
     private Long monthAccumulationContrast=0L;//月累计对比值
 
-    private List<SummaryBean> children = new ArrayList<>();
+    private List<SummaryBean> children = new ArrayList<>();//子级指标
 
     public Long getValue() {
         return value;
