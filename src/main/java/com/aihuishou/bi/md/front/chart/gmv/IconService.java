@@ -6,9 +6,6 @@ import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import com.aihuishou.bi.md.utils.EnumUtil;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -22,7 +19,7 @@ public class IconService {
         return allTypes;
     }
 
-    public String getIconType(ServiceValue serviceName) {
+    public String getServiceType(ServiceValue serviceName) {
         switch(serviceName) {
             case BTB:
                 return ServiceValue.BTB.getValue();

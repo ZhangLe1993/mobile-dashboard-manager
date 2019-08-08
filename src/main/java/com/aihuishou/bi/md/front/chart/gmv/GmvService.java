@@ -62,7 +62,7 @@ public class GmvService {
 
             //实际用来分隔业务类型  B2b, 回收   ，换新
             ServiceValue serviceName = ServiceValue.fromType(service);
-            String iconType = iconService.getIconType(serviceName);
+            String serviceType = iconService.getServiceType(serviceName);
             //Map<String, String> icon = getIcons(iconType);
             Map<String, String> icon = EnumUtil.getIcons(iconService.getClazz(serviceName));
             List labels = new ArrayList(icon.keySet());
@@ -91,21 +91,21 @@ public class GmvService {
                         }
                         return summaryBean;
                     }).collect(Collectors.toList());
-            //是否有其他统计字段 需要另外加和的分类
-            List<String> list = MergeItem.listTotal(service);
+            //是否有其他统计字段 需要另外加和的分类，GMV 和 其他统计标签走一套逻辑。
+            List<String> list = MergeItemService.getNeedMergeCollect(serviceName);
             if (list.size() > 0) {
                 list.forEach(p -> {
-                    //获取子类型
-                    MergeItem type = MergeItem.getTotalType(p);
-                    Set<String> childrenLabel = type.getChild();
+                    Set<String> childrenLabel = MergeItemService.getNeedMergeItem(serviceName, p);
                     SummaryBean sum = new SummaryBean();
-                    sum.setKey(p);
+                    sum.setKey(MergeItemService.getLabel(serviceName, p));
                     sum.setLabel(p);
                     sum.setIcon(icon.get(p));
                     summaryList.stream()
                             .filter(it -> {
                                 if (childrenLabel.contains(it.getLabel())) {
-                                    sum.getChildren().add(it);
+                                    if(!p.equalsIgnoreCase("GMV")) {
+                                        sum.getChildren().add(it);
+                                    }
                                     return true;
                                 }
                                 return false;
@@ -114,27 +114,7 @@ public class GmvService {
                     summaryList.add(0, sum);
                 });
             }
-            //sum
-            SummaryBean sum = new SummaryBean();
-            if (ServiceValue.CTB_0.getValue().equalsIgnoreCase(iconType)) {
-                sum.setKey("GMV（不含加盟）");
-            } else if (ServiceValue.CTB_1.getValue().equalsIgnoreCase(iconType)) {
-                sum.setKey("单量");
-            } else {
-                sum.setKey("GMV");
-            }
-            sum.setLabel("GMV");
-            sum.setIcon(icon.get("GMV"));
-            summaryList.stream()
-                    .filter(it -> {
-                        if (ServiceValue.CTB_0.getValue().equalsIgnoreCase(iconType)) {
-                            return !it.getLabel().contains(Const.banGmv);
-                        }
-                        return true;
-                    })
-                    .reduce(sum, this::accumulation);
-            summaryList.add(0, sum);
-            summaryList.removeIf(bean -> Const.countImDisplay.contains(bean.getLabel()) || MergeItem.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || MergeItem.STORE_BUSINESS.getChild().contains(bean.getLabel()));
+            summaryList.removeIf(bean -> Const.countImDisplay.contains(bean.getLabel()) || MergeItem.BTB.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || MergeItem.BTB.STORE_BUSINESS.getChild().contains(bean.getLabel()));
             //排序
             Collections.sort(summaryList, (c1, c2) -> labels.indexOf(c1.getKey()) - labels.indexOf(c2.getKey()));
             summaryList.stream().filter(it -> it.getChildren().size() > 0).forEach(it -> {

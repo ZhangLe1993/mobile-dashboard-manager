@@ -24,11 +24,11 @@ public enum ServiceValue {
     }
 
     public static ServiceValue fromType(String service) {
-        for (ServiceValue type : ServiceValue.values()) {
-            if (type.getKey().equalsIgnoreCase(service)) {
-                return type;
+        for (ServiceValue item : ServiceValue.values()) {
+            if (item.getKey().equalsIgnoreCase(service)) {
+                return item;
             }
         }
-        return BTB;
+        return ServiceValue.BTB;
     }
 }
