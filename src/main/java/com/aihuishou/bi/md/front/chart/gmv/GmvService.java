@@ -1,9 +1,11 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
 import com.aihuishou.bi.md.core.QRunner;
-import com.aihuishou.bi.md.core.enums.Total;
 import com.aihuishou.bi.md.front.cache.CacheMd;
-import com.aihuishou.bi.md.front.notice.GroupMapping;
+import com.aihuishou.bi.md.front.chart.enums.ServiceItem;
+import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
+import com.aihuishou.bi.md.front.chart.enums.Total;
+import com.aihuishou.bi.md.utils.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -15,7 +17,6 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -50,7 +51,7 @@ public class GmvService {
 
     // .parallelStream().filter(p -> !countImDisplay.contains(p.getGmvType())).collect(Collectors.toList())
     @CacheMd
-    public List<SummaryBean> querySummary(String service) throws ParseException {
+    public List<SummaryBean> querySummary(String service) throws Exception {
         try {
             //最近2日，上月同比日
             Date dataDate = gmvDataDateService.getLastDataDate(service);//最新数据日期
@@ -70,8 +71,10 @@ public class GmvService {
             Map<String, List<GmvDayData>> c = cC.get();//上月同一天
 
             //实际用来分隔业务类型  B2b, 回收   ，换新
-            String iconType = getIconType(service);
-            Map<String, String> icon = getIcons(iconType);
+            ServiceValue serviceName = ServiceValue.fromType(service);
+            String iconType = getIconType(serviceName);
+            //Map<String, String> icon = getIcons(iconType);
+            Map<String, String> icon = EnumUtil.getIcons(getClazz(serviceName));
             List labels = new ArrayList(icon.keySet());
 
             // && ("gmv".equalsIgnoreCase(it) || !countImDisplay.contains(it))
@@ -123,9 +126,9 @@ public class GmvService {
             }
             //sum
             SummaryBean sum = new SummaryBean();
-            if (GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+            if (ServiceValue.CTB_0.getValue().equalsIgnoreCase(iconType)) {
                 sum.setKey("GMV（不含加盟）");
-            } else if (GroupMapping.CTB_1.getValue().equalsIgnoreCase(iconType)) {
+            } else if (ServiceValue.CTB_1.getValue().equalsIgnoreCase(iconType)) {
                 sum.setKey("单量");
             } else {
                 sum.setKey("GMV");
@@ -134,7 +137,7 @@ public class GmvService {
             sum.setIcon(icon.get("GMV"));
             summaryList.stream()
                     .filter(it -> {
-                        if (GroupMapping.CTB_0.getValue().equalsIgnoreCase(iconType)) {
+                        if (ServiceValue.CTB_0.getValue().equalsIgnoreCase(iconType)) {
                             return !it.getLabel().contains(banGmv);
                         }
                         return true;
@@ -170,11 +173,12 @@ public class GmvService {
     }
 
     /**
+     * @Delete
      * @return gmv_type->icon
      */
     private Map<String, String> getIcons(String iconType) {
         Map<String, String> icons = new LinkedHashMap<>();
-        String sql = "select gmv_type,gmv_icon,icon_type from gmv_type_config_pro where enable=true and icon_type = '" + iconType + "' order by order_no";
+        String sql = "select gmv_type,gmv_icon,icon_type from gmv_type_config_pro where enable=1 and icon_type = '" + iconType + "' order by order_no";
         try {
             List<Map<String, Object>> rs = new QueryRunner(mysql).query(sql, new MapListHandler());
             for (Map<String, Object> r : rs) {
@@ -188,8 +192,9 @@ public class GmvService {
         return icons;
     }
 
-    public Set<String> allGmvType(String service) {
-        Set<String> allTypes = getIcons(getIconType(service)).keySet();
+    public Set<String> allGmvType(String service) throws Exception {
+        ServiceValue serviceName = ServiceValue.fromType(service);
+        Set<String> allTypes = EnumUtil.getIcons(getClazz(serviceName)).keySet();
         allTypes.removeAll(banGmvType);
         return new HashSet(allTypes);
     }
@@ -209,42 +214,56 @@ public class GmvService {
     }
 
     private String buildStatement(String service, String gmvType) {
-        if (GroupMapping.BTB.getKey().equalsIgnoreCase(service.trim())) {
+        if (ServiceValue.BTB.getKey().equalsIgnoreCase(service.trim())) {
             return "SELECT t1.report_date AS reportDate,t1.gmv_type AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow," +
                     "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_b2b_gmv_day " +
                     "t1 LEFT JOIN dim.dim_b2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.gmv_type=t3.business_unit " +
                     "WHERE t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.gmv_type=? " : "");
 
-        } else if (GroupMapping.CTB_0.getKey().equalsIgnoreCase(service.trim())) {
+        } else if (ServiceValue.CTB_0.getKey().equalsIgnoreCase(service.trim())) {
 
             return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_amount_num_day AS amountDay,t1.settle_amount_num_to_now AS amountToNow," +
                     "coalesce(t3.gmv_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
                     "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
-                    "WHERE t1.business_type='" + GroupMapping.CTB_0.getValue() + "' AND t1.report_date BETWEEN ? AND ? " + (gmvType != null ? " AND t1.business_unit=? " : "");
-        } else if (GroupMapping.CTB_1.getKey().equalsIgnoreCase(service.trim())) {
+                    "WHERE t1.business_type='" + ServiceValue.CTB_0.getValue() + "' AND t1.report_date BETWEEN ? AND ? " + (gmvType != null ? " AND t1.business_unit=? " : "");
+        } else if (ServiceValue.CTB_1.getKey().equalsIgnoreCase(service.trim())) {
 
             return "SELECT t1.report_date AS reportDate,t1.business_unit AS gmvType,t1.settle_order_num_day AS amountDay,t1.settle_order_num_to_now AS amountToNow," +
                     "coalesce(t3.order_target,-1) AS target FROM rpt.rpt_c2b_gmv_day  " +
                     "t1 LEFT JOIN dim.dim_c2b_gmv_target_month t3 ON substr(t1.report_date,1,7)=t3.month " +
                     "AND t1.business_unit=t3.business_unit AND t1.business_type=t3.business_type " +
-                    "WHERE t1.business_type='" + GroupMapping.CTB_1.getValue() + "' AND t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.business_unit=? " : "");
+                    "WHERE t1.business_type='" + ServiceValue.CTB_1.getValue() + "' AND t1.report_date BETWEEN ? AND ?" + (gmvType != null ? " AND t1.business_unit=? " : "");
         }
         return null;
 
     }
 
-
-    private String getIconType(String service) {
-        if (GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
-            return GroupMapping.BTB.getValue();
-        } else if (GroupMapping.CTB_0.getKey().equalsIgnoreCase(service)) {
-            return GroupMapping.CTB_0.getValue();
-        } else if (GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)) {
-            return GroupMapping.CTB_1.getValue();
+    private Class<?> getClazz(ServiceValue serviceName) {
+        switch(serviceName) {
+            case BTB:
+                return ServiceItem.BTB.class;
+            case CTB_0:
+                return ServiceItem.RECYCLE.class;
+            case CTB_1:
+                return ServiceItem.SWAP.class;
+            default:
+                return ServiceItem.BTB.class;
         }
-        return null;
+    }
+
+    private String getIconType(ServiceValue serviceName) {
+        switch(serviceName) {
+            case BTB:
+                return ServiceValue.BTB.getValue();
+            case CTB_0:
+                return ServiceValue.CTB_0.getValue();
+            case CTB_1:
+                return ServiceValue.CTB_1.getValue();
+            default:
+                return ServiceValue.BTB.getValue();
+        }
     }
 
 

@@ -1,7 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
-import com.aihuishou.bi.md.front.notice.GroupMapping;
-import com.google.common.collect.ImmutableMap;
+import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,7 @@ public class GmvC {
     private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/summary")
-    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
+    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws Exception {
         Date lastDataDate = gmvDataDateService.getLastDataDate(service);
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
@@ -42,7 +41,7 @@ public class GmvC {
         result.put("date_progress", nf.format(monthProgress));
         result.put("data", summary);
         result.put("panel_key","GMV");
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)){
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service)){
             result.put("panel_key","单量");
         }
         return new ResponseEntity(result, HttpStatus.OK);
@@ -52,7 +51,7 @@ public class GmvC {
 
     @RequestMapping("/month_day")
     public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType,
-                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
+                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws Exception {
         List<LineChartData> lineCharts = new ArrayList<>();
         Date now = gmvDataDateService.getLastDataDate(service);//当前最新数据日期
         Calendar cal = Calendar.getInstance();
@@ -73,7 +72,7 @@ public class GmvC {
         //Map<String,List<String>> day
         LineChartData dayLine = new LineChartData();//每日数据折线
         LineChartData accLine = new LineChartData();//累计值数据折线
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             dayLine.setTitle("单量每日");
             accLine.setTitle("单量月累计");
         } else {
@@ -90,7 +89,7 @@ public class GmvC {
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
         });
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             s1.setName("本月单量");
         } else {
             s1.setName("本月" + gmvType);
@@ -112,7 +111,7 @@ public class GmvC {
         LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountDay();
         });
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             s2.setName("上月单量");
         } else {
             s2.setName("上月" + gmvType);
@@ -152,7 +151,7 @@ public class GmvC {
         return new ResponseEntity(lineCharts, HttpStatus.OK);
     }
 
-    private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to){
+    private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to) throws Exception {
         List<GmvDayData> data;
         if ("gmv".equalsIgnoreCase(gmvType)) {
             data = gmvService.allGmvType(service).parallelStream().flatMap(t -> {

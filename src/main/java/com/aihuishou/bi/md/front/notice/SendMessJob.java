@@ -3,6 +3,7 @@ package com.aihuishou.bi.md.front.notice;
 import com.aihuishou.bi.md.front.auth.GroupService;
 import com.aihuishou.bi.md.front.auth.SessionHelper;
 import com.aihuishou.bi.md.front.auth.UserService;
+import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
 import com.aihuishou.bi.md.front.chart.gmv.GmvService;
 import com.aihuishou.bi.md.front.chart.gmv.SummaryBean;
@@ -50,7 +51,7 @@ public class SendMessJob {
     private GroupService groupService;
 
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
-    public void sendGmv() throws IOException, ParseException, SQLException {
+    public void sendGmv() throws Exception {
         try {
             List<String> openIds = userService.allOpenIds();
             log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
@@ -62,7 +63,7 @@ public class SendMessJob {
         }
     }
 
-    public void sendGmv(String openId) throws IOException, ParseException, SQLException {
+    public void sendGmv(String openId) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         String accessToken = sessionHelper.getAccessToken();
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
@@ -84,13 +85,13 @@ public class SendMessJob {
         String templateB = "%s昨日单量: %s %s\n%s本月单量: %s %s\n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
-        if(group.contains(GroupMapping.BTB.getKey())) {
-            fillTemplate(template, sb, keyword1, GroupMapping.BTB);
+        if(group.contains(ServiceValue.BTB.getKey())) {
+            fillTemplate(template, sb, keyword1, ServiceValue.BTB);
         }
 
-        if(group.contains(GroupMapping.CTB.getKey())) {
-            fillTemplate(template, sb, keyword1, GroupMapping.CTB_0);
-            fillTemplate(templateB, sb, keyword1, GroupMapping.CTB_1);
+        if(group.contains(ServiceValue.CTB.getKey())) {
+            fillTemplate(template, sb, keyword1, ServiceValue.CTB_0);
+            fillTemplate(templateB, sb, keyword1, ServiceValue.CTB_1);
         }
         if(sb.length() == 0) {
             return;
@@ -110,7 +111,7 @@ public class SendMessJob {
         log.info("sendGmv(" + openId + ") " + response.getStatusCodeValue() + " \n" + response.getBody());
     }
 
-    private void fillTemplate(String template, StringBuilder sb, Map<String, Object> keyword1, GroupMapping groupMapping) throws ParseException {
+    private void fillTemplate(String template, StringBuilder sb, Map<String, Object> keyword1, ServiceValue groupMapping) throws Exception {
         Date date = gmvDataDateService.getLastDataDate(groupMapping.getKey());
         if (DateUtil.isYesterday(date)) {
             SummaryBean gmvValue = gmvService.querySummary(groupMapping.getKey()).stream().filter(it -> it.getLabel().equalsIgnoreCase("GMV")).findFirst().get();

@@ -1,6 +1,4 @@
-package com.aihuishou.bi.md.core.enums;
-
-import com.aihuishou.bi.md.front.notice.GroupMapping;
+package com.aihuishou.bi.md.front.chart.enums;
 
 import java.util.*;
 
@@ -52,7 +50,7 @@ public enum Total {
     }
 
     public static List<String> listTotal(String service) {
-        if(service.equalsIgnoreCase(GroupMapping.BTB.getKey())){
+        if(service.equalsIgnoreCase(ServiceValue.BTB.getKey())){
             return new ArrayList<>(Arrays.asList(Total.MERCHANT_SERVICES.getType(), Total.STORE_BUSINESS.getType()));
         }
         return new ArrayList<>();
