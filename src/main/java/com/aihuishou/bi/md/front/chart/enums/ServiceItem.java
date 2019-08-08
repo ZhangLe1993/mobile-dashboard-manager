@@ -1,5 +1,8 @@
 package com.aihuishou.bi.md.front.chart.enums;
 
+/**
+ * 区分业务线
+ */
 public interface ServiceItem {
 
     /**

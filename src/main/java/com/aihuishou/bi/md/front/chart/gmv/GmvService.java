@@ -2,9 +2,9 @@ package com.aihuishou.bi.md.front.chart.gmv;
 
 import com.aihuishou.bi.md.core.QRunner;
 import com.aihuishou.bi.md.front.cache.CacheMd;
-import com.aihuishou.bi.md.front.chart.enums.ServiceItem;
+import com.aihuishou.bi.md.front.chart.conf.Const;
+import com.aihuishou.bi.md.front.chart.enums.MergeItem;
 import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
-import com.aihuishou.bi.md.front.chart.enums.Total;
 import com.aihuishou.bi.md.utils.EnumUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.QueryRunner;
@@ -34,20 +34,10 @@ public class GmvService {
     private GmvDataDateService gmvDataDateService;
 
     @Resource
+    private IconService iconService;
+
+    @Resource
     private DataSource mysql;
-    //要ban掉的gmv 类型
-    private List<String> banGmvType = new ArrayList<>();
-
-    {
-        banGmvType.add("加盟店");
-    }
-
-    private final static String banGmv = "加盟";
-    private List<String> countImDisplay = new ArrayList<>();
-
-    {
-        countImDisplay.add("其他");
-    }
 
     // .parallelStream().filter(p -> !countImDisplay.contains(p.getGmvType())).collect(Collectors.toList())
     @CacheMd
@@ -72,9 +62,9 @@ public class GmvService {
 
             //实际用来分隔业务类型  B2b, 回收   ，换新
             ServiceValue serviceName = ServiceValue.fromType(service);
-            String iconType = getIconType(serviceName);
+            String iconType = iconService.getIconType(serviceName);
             //Map<String, String> icon = getIcons(iconType);
-            Map<String, String> icon = EnumUtil.getIcons(getClazz(serviceName));
+            Map<String, String> icon = EnumUtil.getIcons(iconService.getClazz(serviceName));
             List labels = new ArrayList(icon.keySet());
 
             // && ("gmv".equalsIgnoreCase(it) || !countImDisplay.contains(it))
@@ -102,11 +92,11 @@ public class GmvService {
                         return summaryBean;
                     }).collect(Collectors.toList());
             //是否有其他统计字段 需要另外加和的分类
-            List<String> list = Total.listTotal(service);
+            List<String> list = MergeItem.listTotal(service);
             if (list.size() > 0) {
                 list.forEach(p -> {
                     //获取子类型
-                    Total type = Total.getTotalType(p);
+                    MergeItem type = MergeItem.getTotalType(p);
                     Set<String> childrenLabel = type.getChild();
                     SummaryBean sum = new SummaryBean();
                     sum.setKey(p);
@@ -120,7 +110,7 @@ public class GmvService {
                                 }
                                 return false;
                             })
-                            .reduce(sum, this::getSummaryBean);
+                            .reduce(sum, this::accumulation);
                     summaryList.add(0, sum);
                 });
             }
@@ -138,13 +128,13 @@ public class GmvService {
             summaryList.stream()
                     .filter(it -> {
                         if (ServiceValue.CTB_0.getValue().equalsIgnoreCase(iconType)) {
-                            return !it.getLabel().contains(banGmv);
+                            return !it.getLabel().contains(Const.banGmv);
                         }
                         return true;
                     })
-                    .reduce(sum, this::getSummaryBean);
+                    .reduce(sum, this::accumulation);
             summaryList.add(0, sum);
-            summaryList.removeIf(bean -> countImDisplay.contains(bean.getLabel()) || Total.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || Total.STORE_BUSINESS.getChild().contains(bean.getLabel()));
+            summaryList.removeIf(bean -> Const.countImDisplay.contains(bean.getLabel()) || MergeItem.MERCHANT_SERVICES.getChild().contains(bean.getLabel()) || MergeItem.STORE_BUSINESS.getChild().contains(bean.getLabel()));
             //排序
             Collections.sort(summaryList, (c1, c2) -> labels.indexOf(c1.getKey()) - labels.indexOf(c2.getKey()));
             summaryList.stream().filter(it -> it.getChildren().size() > 0).forEach(it -> {
@@ -157,7 +147,13 @@ public class GmvService {
         return new ArrayList<>();
     }
 
-    private SummaryBean getSummaryBean(SummaryBean a1, SummaryBean a2) {
+    /**
+     * 累加
+     * @param a1
+     * @param a2
+     * @return
+     */
+    private SummaryBean accumulation(SummaryBean a1, SummaryBean a2) {
         a1.setValue(a1.getValue() + a2.getValue());
         a1.setValueContrast(a1.getValueContrast() + a2.getValueContrast());
         if (a1.getMonthTarget() == -1) {
@@ -192,21 +188,13 @@ public class GmvService {
         return icons;
     }
 
-    public Set<String> allGmvType(String service) throws Exception {
-        ServiceValue serviceName = ServiceValue.fromType(service);
-        Set<String> allTypes = EnumUtil.getIcons(getClazz(serviceName)).keySet();
-        allTypes.removeAll(banGmvType);
-        return new HashSet(allTypes);
-    }
-
-
     @CacheMd
     public List<GmvDayData> queryDetail(Date from, Date to, String gmvType, String service) {
         String sql = buildStatement(service, gmvType);
         Object[] params = gmvType == null ? new Object[]{from, to} : new Object[]{from, to, gmvType};
         try {
             List<GmvDayData> arr = new QRunner(gp).query(sql, new BeanListHandler<>(GmvDayData.class), params);
-            return arr.stream().filter(it -> !banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
+            return arr.stream().filter(it -> !Const.banGmvType.contains(it.getGmvType())).collect(Collectors.toList());
         } catch (SQLException e) {
             log.error("", e);
             return new ArrayList<>();
@@ -240,34 +228,15 @@ public class GmvService {
 
     }
 
-    private Class<?> getClazz(ServiceValue serviceName) {
-        switch(serviceName) {
-            case BTB:
-                return ServiceItem.BTB.class;
-            case CTB_0:
-                return ServiceItem.RECYCLE.class;
-            case CTB_1:
-                return ServiceItem.SWAP.class;
-            default:
-                return ServiceItem.BTB.class;
-        }
+    private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate, String service) {
+        FutureTask<Map<String, List<GmvDayData>>> futureTask = new FutureTask(() -> {
+            return queryDetail(queryDate, service).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));
+        });
+        new Thread(futureTask).run();
+        return futureTask;
     }
 
-    private String getIconType(ServiceValue serviceName) {
-        switch(serviceName) {
-            case BTB:
-                return ServiceValue.BTB.getValue();
-            case CTB_0:
-                return ServiceValue.CTB_0.getValue();
-            case CTB_1:
-                return ServiceValue.CTB_1.getValue();
-            default:
-                return ServiceValue.BTB.getValue();
-        }
-    }
-
-
-    public List<GmvDayData> queryDetail(Date day, String service) throws SQLException {
+    private List<GmvDayData> queryDetail(Date day, String service) throws SQLException {
         Calendar cal = Calendar.getInstance();
         cal.setTime(day);
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -281,11 +250,5 @@ public class GmvService {
         return queryDetail(from, to, null, service);
     }
 
-    private FutureTask<Map<String, List<GmvDayData>>> submitQuery(Date queryDate, String service) {
-        FutureTask<Map<String, List<GmvDayData>>> futureTask = new FutureTask(() -> {
-            return queryDetail(queryDate, service).stream().collect(Collectors.groupingBy(it -> it.getGmvType()));
-        });
-        new Thread(futureTask).run();
-        return futureTask;
-    }
+
 }

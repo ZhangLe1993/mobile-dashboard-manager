@@ -26,6 +26,9 @@ public class GmvC {
     private GmvService gmvService;
 
     @Resource
+    private IconService iconService;
+
+    @Resource
     private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/summary")
@@ -154,7 +157,7 @@ public class GmvC {
     private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to) throws Exception {
         List<GmvDayData> data;
         if ("gmv".equalsIgnoreCase(gmvType)) {
-            data = gmvService.allGmvType(service).parallelStream().flatMap(t -> {
+            data = iconService.allGmvType(service).parallelStream().flatMap(t -> {
                 return gmvService.queryDetail(from, to, t, service).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()
