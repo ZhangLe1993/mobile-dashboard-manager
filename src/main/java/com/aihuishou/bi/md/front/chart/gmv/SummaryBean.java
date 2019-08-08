@@ -1,6 +1,8 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SummaryBean implements Serializable {
     private Long value=0L;//当前值
@@ -11,6 +13,8 @@ public class SummaryBean implements Serializable {
     private Long monthTarget=0L;//月目标
     private Long monthAccumulation=0L;//月累计值
     private Long monthAccumulationContrast=0L;//月累计对比值
+
+    private List<SummaryBean> children = new ArrayList<>();//子级指标
 
     public Long getValue() {
         return value;
@@ -74,5 +78,13 @@ public class SummaryBean implements Serializable {
 
     public void setMonthAccumulationContrast(Long monthAccumulationContrast) {
         this.monthAccumulationContrast = monthAccumulationContrast;
+    }
+
+    public List<SummaryBean> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<SummaryBean> children) {
+        this.children = children;
     }
 }
