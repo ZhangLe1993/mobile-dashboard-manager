@@ -10,10 +10,10 @@ public interface ServiceItem {
      */
     enum BTB implements ServiceItem {
         GMV("B2B", "GMV", "icondollar"),
-        MERCHANT_BUSINESS("B2B", "商家业务", "iconshop"),
+        MERCHANT_BUSINESS("B2B", "商家业务", "iconhammer"),
         OPT("B2B", "OPT", "iconnotice"),
         POP("B2B", "POP", "iconnotice"),
-        STORE_BUSINESS("B2B", "到店业务", "iconshop"),
+        STORE_BUSINESS("B2B", "到店业务", "iconuser"),
         LOVE_MACHINE_SINK("B2B", "爱机汇", "icontool"),
         SHOP_BAO("B2B", "店员宝", "iconstore"),
         CORPORATE_SERVICES("B2B", "企业服务", "iconcomputer"),
