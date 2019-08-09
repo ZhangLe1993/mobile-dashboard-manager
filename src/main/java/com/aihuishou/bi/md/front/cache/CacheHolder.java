@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class CacheHolder {
 
-    public static final String CACHE_NAME = "cache-md";
+    public static final String CACHE_NAME = "cache-md-3.1";
 
     public static final String GMV_LAST_DATA_DATE_CACHE_NAME = "gmv-last-data-date";
 
