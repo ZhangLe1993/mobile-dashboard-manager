@@ -60,9 +60,10 @@ public class GmvService {
             Map<String, List<GmvDayData>> b = bC.get();//上一日
             Map<String, List<GmvDayData>> c = cC.get();//上月同一天
 
-            //实际用来分隔业务类型  B2b, 回收   ，换新
+            //实际用来分隔业务类型  B2b, c2b_0 ，c2b_1
             ServiceValue serviceName = ServiceValue.fromType(service);
-            String serviceType = iconService.getServiceType(serviceName);
+            //B2b, 回收 ，换新
+            //String serviceType = iconService.getServiceType(serviceName);
             //Map<String, String> icon = getIcons(iconType);
             Map<String, String> icon = EnumUtil.getIcons(iconService.getClazz(serviceName));
             List labels = new ArrayList(icon.keySet());

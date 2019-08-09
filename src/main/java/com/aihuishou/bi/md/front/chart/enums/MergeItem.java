@@ -8,7 +8,7 @@ import java.util.*;
 public interface MergeItem {
 
     enum BTB implements MergeItem {
-        GMV("B2B", "GMV", "GMV", new HashSet<>(Arrays.asList("OPT", "POP", "爱机汇", "店员宝", "尾品汇", "企业服务", "海外"))),
+        GMV("B2B", "GMV", "GMV", new HashSet<>(Arrays.asList("OPT", "POP", "爱机汇", "店员宝", "企业服务", "尾品汇", "海外"))),
         MERCHANT_SERVICES("B2B", "商家业务", "商家业务", new HashSet<>(Arrays.asList("OPT", "POP"))),
         STORE_BUSINESS("B2B", "到店业务", "到店业务", new HashSet<>(Arrays.asList("爱机汇", "店员宝")))
         ;

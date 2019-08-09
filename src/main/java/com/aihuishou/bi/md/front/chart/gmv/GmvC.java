@@ -154,17 +154,20 @@ public class GmvC {
         return new ResponseEntity(lineCharts, HttpStatus.OK);
     }
 
-    private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to) throws Exception {
+    private List<GmvDayData> getDetailData(String gmvType, String service, Date from,Date to) throws Exception {
         List<GmvDayData> data;
-        if ("gmv".equalsIgnoreCase(gmvType)) {
-            data = iconService.allGmvType(service).parallelStream().flatMap(t -> {
+        ServiceValue serviceName = ServiceValue.fromType(service);
+        List<String> list = MergeItemService.getNeedMergeCollect(serviceName);
+        Set<String> childrenLabel = MergeItemService.getNeedMergeItem(serviceName, gmvType);
+        if(list.contains(gmvType) && childrenLabel.size() > 0) {
+            data = childrenLabel.parallelStream().flatMap(t -> {
                 return gmvService.queryDetail(from, to, t, service).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()
                     .map(it -> {
                         GmvDayData v = new GmvDayData();
                         v.setReportDate(it.getKey());
-                        v.setGmvType("GMV");
+                        v.setGmvType(gmvType);
                         return it.getValue().stream().reduce(v, (a1, a2) -> {
                             a1.setAmountDay(a1.getAmountDay() + a2.getAmountDay());
                             a1.setAmountToNow(a1.getAmountToNow() + a2.getAmountToNow());
