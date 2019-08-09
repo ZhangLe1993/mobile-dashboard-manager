@@ -3,7 +3,7 @@ package com.aihuishou.bi.md.front.auth;
 import com.aihuishou.bi.md.front.auth.exception.AuthException;
 import com.aihuishou.bi.md.front.auth.exception.UserBanException;
 import com.aihuishou.bi.md.front.auth.exception.UserNotActivationException;
-import com.aihuishou.bi.md.front.notice.GroupMapping;
+import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -53,11 +53,11 @@ public class GroupInterceptor implements HandlerInterceptor {
             throw new UserBanException();
         }
 
-        if(groups.contains(GroupMapping.CTB.getKey()) && !groups.contains(GroupMapping.BTB.getKey()) && GroupMapping.BTB.getKey().equalsIgnoreCase(service)) {
+        if(groups.contains(ServiceValue.CTB.getKey()) && !groups.contains(ServiceValue.BTB.getKey()) && ServiceValue.BTB.getKey().equalsIgnoreCase(service)) {
             throw new UserBanException();
         }
 
-        if(groups.contains(GroupMapping.BTB.getKey()) && !groups.contains(GroupMapping.CTB.getKey()) && (GroupMapping.CTB_0.getKey().equalsIgnoreCase(service) || GroupMapping.CTB_1.getKey().equalsIgnoreCase(service))) {
+        if(groups.contains(ServiceValue.BTB.getKey()) && !groups.contains(ServiceValue.CTB.getKey()) && (ServiceValue.CTB_0.getKey().equalsIgnoreCase(service) || ServiceValue.CTB_1.getKey().equalsIgnoreCase(service))) {
             throw new UserBanException();
         }
 

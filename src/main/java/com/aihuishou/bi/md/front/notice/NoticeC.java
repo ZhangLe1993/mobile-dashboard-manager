@@ -38,7 +38,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger")
-    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws IOException, ParseException, SQLException {
+    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws Exception {
         if (!StringUtils.isEmpty(employeeNo)) {
             User u = userService.findByEmployeeNo(employeeNo);
             String openId = u.getOpenId();
@@ -49,7 +49,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger/test")
-    public void test() throws IOException, ParseException, SQLException {
+    public void test() throws Exception {
         log.info("发送模板测试");
         sendMessJob.sendGmv("oYscn48qNNGWWYVfZLuXzfWKfFQc");
     }
