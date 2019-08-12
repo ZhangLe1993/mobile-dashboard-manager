@@ -116,7 +116,7 @@ public class UserService {
     }
 
     public Long count(String key) {
-        String sql = "select count(distinct *) from dim_observer_account b  \n" +
+        String sql = "select count(1) from dim_observer_account b  \n" +
                 "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
         try {
             key = "%" + key + "%";
