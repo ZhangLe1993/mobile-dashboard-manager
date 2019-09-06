@@ -94,7 +94,7 @@ public interface MergeItem {
     }
 
     enum SWAP implements MergeItem {
-        GMV("换新", "GMV", "单量", new HashSet<>(Arrays.asList("官网", "自营门店")))
+        GMV("换新", "GMV", "单量", new HashSet<>(Arrays.asList("官网", "自营门店", "BD")))
         ;
 
         private String service;

@@ -83,7 +83,8 @@ public interface ServiceItem {
     enum SWAP implements ServiceItem {
         GMV("换新", "GMV", "icondollar"),
         WEBSITE("换新", "官网", "iconwebsite"),
-        REGION("换新", "自营门店", "iconstore")
+        REGION("换新", "自营门店", "iconstore"),
+        BD("换新", "BD", "iconbd")
         ;
         private String service;
         private String name;
