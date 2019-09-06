@@ -49,11 +49,13 @@ public class UserService {
         return new QueryRunner(dataSource).query(sql, new BeanHandler<User>(User.class), Integer.parseInt(obId));
     }
 
+    private String searchUserSql = "select distinct a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
+            "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin \n" +
+            "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
+            "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000)";
+
     public List<User> all(String key, int pageIndex, int pageSize) {
-        String sql = "select a.id,COALESCE(a.name,b.observer_account_user_name) as name,COALESCE(a.employee_no,b.observer_account_employee_no) as employeeNo,\n" +
-                "a.open_id as openId,a.active,a.activation_code as activationCode,a.enable,a.is_admin as isAdmin \n" +
-                "from user a right join dim_observer_account b on a.employee_no=b.`observer_account_employee_no` \n" +
-                "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ? order by COALESCE(a.id,10000) limit ?,? ";
+        String sql = searchUserSql + " limit ?,? ";
         try {
             key = "%" + key + "%";
             int a = (pageIndex - 1) * pageSize;
@@ -108,7 +110,7 @@ public class UserService {
     public boolean active(String openId, String activationCode) throws SQLException {
         String sql = "select count(*) from user where open_id=? and activation_code=? and enable=1 and active=1;";
         Long count = new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(), openId, activationCode);
-        if(count > 0) {
+        if (count > 0) {
             return true;
         }
         sql = "update user set open_id=?,active=1 where activation_code=? and active=0 and enable=1";
@@ -116,8 +118,7 @@ public class UserService {
     }
 
     public Long count(String key) {
-        String sql = "select count(*) from dim_observer_account b  \n" +
-                "where b.observer_account_is_active_flag=1 and b.`observer_account_name` like ? or b.`observer_account_user_name` like ? or b.`observer_account_employee_no` like ?";
+        String sql = "select count(1) from ("+searchUserSql+" ) as t";
         try {
             key = "%" + key + "%";
             return new QueryRunner(dataSource).query(sql, new ScalarHandler<Long>(), key, key, key);

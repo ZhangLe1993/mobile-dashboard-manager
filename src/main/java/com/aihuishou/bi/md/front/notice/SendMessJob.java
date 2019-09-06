@@ -170,7 +170,7 @@ public class SendMessJob {
             for (int i = 0; i < arr.size(); i++) {
                 FormId f = arr.get(i);
                 if (f.getExpireTime() >= System.currentTimeMillis()) {//已过期
-                    log.info("从集合【{}】中删除过期的formId【{}】", key, f.getValue());
+                    log.info("openId:{} 从集合【{}】中删除过期的formId【{}】",openId, key, f.getValue());
                     redisTemplate.opsForList().remove(key, 1, f.getValue());
                     total--;
                 }
@@ -209,5 +209,11 @@ public class SendMessJob {
         String key = FORM_ID_PREFIX + openId;
         List formId = redisTemplate.opsForList().range(key, 0, -1);
         return formId;
+    }
+
+    public void clearFormIds(String openId){
+        log.info("clearFormIds openId:"+openId);
+        String key = FORM_ID_PREFIX + openId;
+        redisTemplate.delete(key);
     }
 }
