@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class IndexC {
-    @RequestMapping("_health_check")
+    @RequestMapping(value = {"_health_check","/"})
     public ResponseEntity healthCheck(){
         return new ResponseEntity("1.0",HttpStatus.OK);
     }
+
 }
