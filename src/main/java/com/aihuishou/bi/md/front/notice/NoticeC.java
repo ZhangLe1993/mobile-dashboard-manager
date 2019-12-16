@@ -34,11 +34,12 @@ public class NoticeC {
     @PutMapping("/front/notice/form_id")
     public void submitFormId(@RequestParam("form_id") String formId, @RequestHeader("sid") String sid) {
         String openId = sessionHelper.getOpenId(sid);
+        log.info("controller add formId openId:"+openId+" formId:"+formId);
         sendMessJob.addFormId(openId, formId);
     }
 
     @GetMapping("/back/notice/trigger")
-    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws IOException, ParseException, SQLException {
+    public void trigger(@RequestParam(value = "employee_no", required = false) String employeeNo) throws Exception {
         if (!StringUtils.isEmpty(employeeNo)) {
             User u = userService.findByEmployeeNo(employeeNo);
             String openId = u.getOpenId();
@@ -49,7 +50,7 @@ public class NoticeC {
     }
 
     @GetMapping("/back/notice/trigger/test")
-    public void test() throws IOException, ParseException, SQLException {
+    public void test() throws Exception {
         log.info("发送模板测试");
         sendMessJob.sendGmv("oYscn48qNNGWWYVfZLuXzfWKfFQc");
     }

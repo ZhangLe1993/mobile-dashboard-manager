@@ -4,11 +4,15 @@ spring:
     username: mobi_dashboard
   redis:
     host: r-bp1df75eafff5994.redis.rds.aliyuncs.com
-    db: 14
+    database: 14
 
 server:
   port: 8080
 
 cas:
-   client:
-     host: http://abdashboard.aihuishou.com
+  client:
+     host: https://abdashboard.aihuishou.com
+  server:
+    host: https://sso.ob.aihuishou.com/casservice
+    login: https://sso.ob.aihuishou.com/casservice/login
+    logout: https://sso.ob.aihuishou.com/casservice/logout?service=https://abdashboard.aihuishou.com

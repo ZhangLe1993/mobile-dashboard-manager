@@ -30,11 +30,12 @@ public class HomeC {
     @RequestMapping("/clear_md")
     public void clearMd() {
         cacheManager.getCache(CacheHolder.CACHE_NAME).clear();
+        cacheManager.getCache(CacheHolder.GMV_LAST_DATA_DATE_CACHE_NAME).clear();
     }
 
     @RequestMapping("/gmv_data_date")
     public String updateGmvDataDate(@RequestParam(value = "date", required = false) String date,
-                                    @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
+                                    @RequestParam(value = "service_type", required = false, defaultValue = "b2b") String service) throws ParseException {
         clearMd();
         gmvDataDateService.setLastDataDate(date, service);
         return new SimpleDateFormat("yyyy-MM-dd").format(gmvDataDateService.getLastDataDate(service));
@@ -45,6 +46,10 @@ public class HomeC {
         return sendMessJob.allFormIds(openId);
     }
 
+    @RequestMapping("/form_ids/delete")
+    public void delFormIds(@RequestParam("open-id") String openId) {
+        sendMessJob.clearFormIds(openId);
+    }
 
     @RequestMapping("")
     public String index() {

@@ -47,15 +47,8 @@ public class LoginC {
             openId = sessionHelper.getOpenId(sid);
         }
         if (StringUtils.isEmpty(openId)) {
-            WxSessionResponse resp = checkCode(code);
-            if (resp.getErrCode() == null || resp.getErrCode() == 0) {
-                openId = resp.getOpenId();
-                sid = UUID.randomUUID().toString();
-                sessionHelper.bindSid(sid, openId);
-            } else {//微信认证失败
-                log.error(resp.getErrMsg());
-                throw new WeixinAuthFailException();
-            }
+            sid = getSid(code);
+            openId = sessionHelper.getOpenId(sid);
         }
         response.setHeader("sid", sid);
         userService.checkActive(openId);//校验激活情况
@@ -82,11 +75,18 @@ public class LoginC {
     /**
      * 用户进行激活处理
      *
-     * @param activationCode
+     * @param activationCode 激活码
+     * @param sid            会话ID
+     * @param sidCode        用来获取会话ID的code
      * @return
      */
     @RequestMapping("/active")
-    public void active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid") String sid, HttpServletResponse response) throws SQLException {
+    public void active(@RequestParam("code") String activationCode, @RequestHeader(value = "sid", required = false) String sid,
+                       @RequestParam(value = "sid_code", required = false) String sidCode, HttpServletResponse response) throws SQLException, IOException {
+        log.info("code:"+activationCode+" sid:"+sid+" sid_code:"+sidCode);
+        if (!StringUtils.isEmpty(sidCode)) {
+            sid = getSid(sidCode);
+        }
         String openId = sessionHelper.getOpenId(sid);
         if (StringUtils.isEmpty(openId)) {//校验用户SID会话
             throw new InvalidSidException();
@@ -103,7 +103,20 @@ public class LoginC {
             response.setStatus(200);
             response.setHeader("no", userService.findByOpenId(openId).getEmployeeNo());
             response.setHeader("group", JSONArray.toJSONString(group));
+            response.setHeader("sid", sid);
         }
     }
 
+    private String getSid(String code) throws IOException {
+        WxSessionResponse resp = checkCode(code);
+        if (resp.getErrCode() == null || resp.getErrCode() == 0) {
+            String openId = resp.getOpenId();
+            String sid = UUID.randomUUID().toString();
+            sessionHelper.bindSid(sid, openId);
+            return sid;
+        } else {//微信认证失败
+            log.error(resp.getErrMsg());
+            throw new WeixinAuthFailException();
+        }
+    }
 }

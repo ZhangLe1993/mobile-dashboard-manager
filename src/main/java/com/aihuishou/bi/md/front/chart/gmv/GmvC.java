@@ -1,6 +1,6 @@
 package com.aihuishou.bi.md.front.chart.gmv;
 
-import com.aihuishou.bi.md.front.notice.GroupMapping;
+import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +26,13 @@ public class GmvC {
     private GmvService gmvService;
 
     @Resource
+    private IconService iconService;
+
+    @Resource
     private GmvDataDateService gmvDataDateService;
 
     @RequestMapping("/summary")
-    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) {
+    public ResponseEntity summary(@RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws Exception {
         Date lastDataDate = gmvDataDateService.getLastDataDate(service);
         Calendar cal = Calendar.getInstance();
         cal.setTime(lastDataDate);
@@ -41,7 +44,7 @@ public class GmvC {
         result.put("date_progress", nf.format(monthProgress));
         result.put("data", summary);
         result.put("panel_key","GMV");
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service)){
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service)){
             result.put("panel_key","单量");
         }
         return new ResponseEntity(result, HttpStatus.OK);
@@ -51,7 +54,7 @@ public class GmvC {
 
     @RequestMapping("/month_day")
     public ResponseEntity monthDay(@RequestParam(value = "type") String gmvType,
-                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) {
+                                   @RequestParam(value="service_type", required = false, defaultValue = "b2b") String service) throws Exception {
         List<LineChartData> lineCharts = new ArrayList<>();
         Date now = gmvDataDateService.getLastDataDate(service);//当前最新数据日期
         Calendar cal = Calendar.getInstance();
@@ -68,9 +71,11 @@ public class GmvC {
 
         //上月初至今的数据
         List<GmvDayData> data=getDetailData(gmvType, service, a,now);
+
+        //Map<String,List<String>> day
         LineChartData dayLine = new LineChartData();//每日数据折线
         LineChartData accLine = new LineChartData();//累计值数据折线
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             dayLine.setTitle("单量每日");
             accLine.setTitle("单量月累计");
         } else {
@@ -79,13 +84,15 @@ public class GmvC {
         }
 
         List<String> xArr = getFullMonthDate(now);
-        dayLine.setxAxis(xArr);//本月设X轴
+        dayLine.setxAxis(xArr);
         accLine.setxAxis(xArr);
+        dayLine.getxAxisArr().put("cur", xArr);//本月设X轴
+        accLine.getxAxisArr().put("cur", xArr);
         //本月每天
         LineChartData.Series s1 = getFullMonthDayData(now, data, it -> {
             return it.getAmountDay();
         });
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             s1.setName("本月单量");
         } else {
             s1.setName("本月" + gmvType);
@@ -97,17 +104,23 @@ public class GmvC {
         });
         acc1.setName("本月"/*+gmvType+"累计"*/);
         accLine.getSeries().add(acc1);
+
+        List<String> xArr2 = getFullMonthDate(b);
+        dayLine.getxAxisArr().put("pre", xArr2);//本月设X轴
+        accLine.getxAxisArr().put("pre", xArr2);
+        //dayLine.setxAxis(xArr2);//本月设X轴
+        //accLine.setxAxis(xArr2);
         //上月每天
         LineChartData.Series s2 = getFullMonthDayData(b, data, it -> {
             return it.getAmountDay();
         });
-        if(GroupMapping.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
+        if(ServiceValue.CTB_1.getKey().equalsIgnoreCase(service) && "GMV".equalsIgnoreCase(gmvType)) {
             s2.setName("上月单量");
         } else {
             s2.setName("上月" + gmvType);
         }
-        if (s2.getData().size() > xArr.size()) {
-            s2.setData(s2.getData().subList(0, xArr.size()));
+        if (s2.getData().size() > xArr2.size()) {
+            s2.setData(s2.getData().subList(0, xArr2.size()));
         }
         dayLine.getSeries().add(s2);
         //上月累计
@@ -115,18 +128,24 @@ public class GmvC {
             return it.getAmountToNow();
         });
         acc2.setName("上月"/* + gmvType+"累计"*/);
-        if (acc2.getData().size() > xArr.size()) {
-            acc2.setData(acc2.getData().subList(0, xArr.size()));
+        if (acc2.getData().size() > xArr2.size()) {
+            acc2.setData(acc2.getData().subList(0, xArr2.size()));
         }
         accLine.getSeries().add(acc2);
+
+        List<String> xArr3 = getFullMonthDate(lastYearMonthEnd);
+        dayLine.getxAxisArr().put("last", xArr3);//本月设X轴
+        accLine.getxAxisArr().put("last", xArr3);
+        dayLine.setxAxis(xArr3);//本月设X轴
+        accLine.setxAxis(xArr3);
         //去年同月
         List<GmvDayData> lastYearData = getDetailData(gmvType, service, lastYearMonthBegin, lastYearMonthEnd);
         LineChartData.Series acc3 = getFullMonthDayData(lastYearMonthEnd, lastYearData, it -> {
             return it.getAmountToNow();
         });
         acc3.setName("去年同月"/* + gmvType+"累计"*/);
-        if (acc3.getData().size() > xArr.size()) {
-            acc3.setData(acc3.getData().subList(0, xArr.size()));
+        if (acc3.getData().size() > xArr3.size()) {
+            acc3.setData(acc3.getData().subList(0, xArr3.size()));
         }
         accLine.getSeries().add(acc3);
         //添加每天+累计的折线图
@@ -135,17 +154,20 @@ public class GmvC {
         return new ResponseEntity(lineCharts, HttpStatus.OK);
     }
 
-    private List<GmvDayData> getDetailData(String gmvType,String service, Date from,Date to){
+    private List<GmvDayData> getDetailData(String gmvType, String service, Date from,Date to) throws Exception {
         List<GmvDayData> data;
-        if ("gmv".equalsIgnoreCase(gmvType)) {
-            data = gmvService.allGmvType(service).parallelStream().flatMap(t -> {
+        ServiceValue serviceName = ServiceValue.fromType(service);
+        List<String> list = MergeItemService.getNeedMergeCollect(serviceName);
+        Set<String> childrenLabel = MergeItemService.getNeedMergeItem(serviceName, gmvType);
+        if(list.contains(gmvType) && childrenLabel.size() > 0) {
+            data = childrenLabel.parallelStream().flatMap(t -> {
                 return gmvService.queryDetail(from, to, t, service).stream();
             }).collect(Collectors.groupingBy(it -> it.getReportDate()))
                     .entrySet().stream()
                     .map(it -> {
                         GmvDayData v = new GmvDayData();
                         v.setReportDate(it.getKey());
-                        v.setGmvType("GMV");
+                        v.setGmvType(gmvType);
                         return it.getValue().stream().reduce(v, (a1, a2) -> {
                             a1.setAmountDay(a1.getAmountDay() + a2.getAmountDay());
                             a1.setAmountToNow(a1.getAmountToNow() + a2.getAmountToNow());
