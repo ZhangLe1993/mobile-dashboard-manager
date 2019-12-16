@@ -42,14 +42,25 @@ public class CacheHolder {
             public void run() {
                 long time2sleep = Math.max(ttl.toMillis() / 2, MIN_TIME_SLEEP);
                 while (true) {
+                    Cache cache = cacheManager.getCache(CACHE_NAME);
                     try {
                         Thread.sleep(time2sleep);
                         log.info("cache holder refresh!!! " + key);
                         Object v = method.invoke(o, objects);
-                        Cache cache = cacheManager.getCache(CACHE_NAME);
                         cache.put(key, v);
+                        time2sleep = Math.max(ttl.toMillis() / 2, MIN_TIME_SLEEP);// 一次正常的缓存put后，sleep time还原到默认频率
                     } catch (Throwable e) {
-                        log.error("", e);
+                        log.error("cache fail!!!extend pre cache", e);
+                        // 如果失败就直接延长之前的缓存结果
+                        try {
+                            Cache.ValueWrapper vWrap = cache.get(key);
+                            if (vWrap != null) {
+                                cache.put(key, vWrap.get());
+                            }
+                            time2sleep = MIN_TIME_SLEEP;// 失败的情况下，sleep time的频率要变快
+                        }catch (Exception e1){
+                            log.error("extend pre cache fail!!!", e1);
+                        }
                     }
                 }
             }
@@ -58,4 +69,6 @@ public class CacheHolder {
             t.start();
         }
     }
+
+
 }
