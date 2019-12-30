@@ -7,6 +7,7 @@ import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
 import com.aihuishou.bi.md.front.chart.gmv.GmvService;
 import com.aihuishou.bi.md.front.chart.gmv.SummaryBean;
+import com.aihuishou.bi.md.utils.LockUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -52,8 +54,13 @@ public class SendMessJob {
 
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() throws Exception {
-//        boolean flag = LockUtil.tryLock(lockKey, 60, 3600, TimeUnit.SECONDS);
-//        if(flag) {
+        sendGmv(false);
+    }
+
+
+    public void sendGmv(boolean force) throws Exception {
+        boolean flag = LockUtil.tryLock(lockKey, 60, 3600, TimeUnit.SECONDS);
+        if (flag || force) {
             try {
                 List<String> openIds = userService.allOpenIds();
                 log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
@@ -63,16 +70,16 @@ public class SendMessJob {
             } catch (SQLException e) {
                 log.error("sendGmv error", e);
             }
-//        } else {
+        } else {
             log.info("the other machine instance had or having sent gmv to customer...");
-//        }
+        }
     }
 
     public void sendGmv(String openId) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
         String accessToken = sessionHelper.getAccessToken();
         String url = "https://api.weixin.qq.com/cgi-bin/message/wxopen/template/send?access_token=" + accessToken;
-        Map<String,Object> arguments = new HashMap<>();
+        Map<String, Object> arguments = new HashMap<>();
         String template_id = "8djC-TtdVUqn-A48-aehRU22-jz08vd1DVgXDRC9SC0";
         String formId = popFormId(openId);
         if (formId == null) {
@@ -80,29 +87,29 @@ public class SendMessJob {
             return;
         }
         List<String> group = groupService.list(openId);
-        if(group == null || group.size() == 0) {
+        if (group == null || group.size() == 0) {
             return;
         }
 
-        Map<String,Object> data = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
 
         String template = "%s昨日GMV: %s %s\n%s本月GMV: %s %s\n";
         String templateB = "%s昨日单量: %s %s\n%s本月单量: %s %s\n";
         StringBuilder sb = new StringBuilder();
         Map<String, Object> keyword1 = new HashMap<>();
-        if(group.contains(ServiceValue.BTB.getKey())) {
+        if (group.contains(ServiceValue.BTB.getKey())) {
             fillTemplate(template, sb, keyword1, ServiceValue.BTB);
         }
 
-        if(group.contains(ServiceValue.CTB.getKey())) {
+        if (group.contains(ServiceValue.CTB.getKey())) {
             fillTemplate(template, sb, keyword1, ServiceValue.CTB_0);
             fillTemplate(templateB, sb, keyword1, ServiceValue.CTB_1);
         }
-        if(sb.length() == 0) {
+        if (sb.length() == 0) {
             return;
         }
         Map<String, Object> keyword2 = new HashMap<>();
-        keyword2.put("value",sb.toString());
+        keyword2.put("value", sb.toString());
         data.put("keyword1", keyword1);
         data.put("keyword2", keyword2);
 
@@ -171,11 +178,11 @@ public class SendMessJob {
         ListOperations opt = redisTemplate.opsForList();
         List<FormId> arr = opt.range(key, 0, -1);
         int total = arr.size();
-        if(total>=FORM_MAX_SIZE){//存储已满时触发检查，清理过期的FormId
+        if (total >= FORM_MAX_SIZE) {//存储已满时触发检查，清理过期的FormId
             for (int i = 0; i < arr.size(); i++) {
                 FormId f = arr.get(i);
                 if (f.getExpireTime() >= System.currentTimeMillis()) {//已过期
-                    log.info("openId:{} 从集合【{}】中删除过期的formId【{}】",openId, key, f.getValue());
+                    log.info("openId:{} 从集合【{}】中删除过期的formId【{}】", openId, key, f.getValue());
                     redisTemplate.opsForList().remove(key, 1, f.getValue());
                     total--;
                 }
@@ -216,8 +223,8 @@ public class SendMessJob {
         return formId;
     }
 
-    public void clearFormIds(String openId){
-        log.info("clearFormIds openId:"+openId);
+    public void clearFormIds(String openId) {
+        log.info("clearFormIds openId:" + openId);
         String key = FORM_ID_PREFIX + openId;
         redisTemplate.delete(key);
     }

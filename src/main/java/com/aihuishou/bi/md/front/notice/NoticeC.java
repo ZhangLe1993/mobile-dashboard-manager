@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.text.ParseException;
 
 @Slf4j
 @RestController
@@ -45,7 +42,7 @@ public class NoticeC {
             String openId = u.getOpenId();
             sendMessJob.sendGmv(openId);
         } else {
-            sendMessJob.sendGmv();
+            sendMessJob.sendGmv(true);
         }
     }
 
