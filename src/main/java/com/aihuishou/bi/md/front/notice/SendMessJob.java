@@ -7,7 +7,6 @@ import com.aihuishou.bi.md.front.chart.enums.ServiceValue;
 import com.aihuishou.bi.md.front.chart.gmv.GmvDataDateService;
 import com.aihuishou.bi.md.front.chart.gmv.GmvService;
 import com.aihuishou.bi.md.front.chart.gmv.SummaryBean;
-import com.aihuishou.bi.md.utils.LockUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,7 +23,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -54,8 +52,8 @@ public class SendMessJob {
 
     @Scheduled(cron = "0 30 9 * * ?")//每天9点半
     public void sendGmv() throws Exception {
-        boolean flag = LockUtil.tryLock(lockKey, 60, 3600, TimeUnit.SECONDS);
-        if(flag) {
+//        boolean flag = LockUtil.tryLock(lockKey, 60, 3600, TimeUnit.SECONDS);
+//        if(flag) {
             try {
                 List<String> openIds = userService.allOpenIds();
                 log.info("begin sendGmv======" + org.apache.commons.lang3.StringUtils.join(openIds, ","));
@@ -65,9 +63,9 @@ public class SendMessJob {
             } catch (SQLException e) {
                 log.error("sendGmv error", e);
             }
-        } else {
+//        } else {
             log.info("the other machine instance had or having sent gmv to customer...");
-        }
+//        }
     }
 
     public void sendGmv(String openId) throws Exception {
