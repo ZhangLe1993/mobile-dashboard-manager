@@ -1,9 +1,9 @@
 #sunjian
-#app_id: wx23b95852ed031837
-#app_secret: b76a67cf5cb87001ebda7366942c420e
+#app_id:
+#app_secret:
 #yangang.li
-app_id: wx112902cee8469942
-app_secret: 715990405ffaf5438581ba78cade5fc6
+app_id:
+app_secret:
 
 spring:
   datasource:
@@ -14,7 +14,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     min-idle: 5
   gp-datasource:
-    url: jdbc:postgresql://gp-bp1j7sa3410948756.gpdb.rds.aliyuncs.com:3432/warehouse
+    url: jdbc:postgresql://:3432/warehouse
     username: rpt
     driver-class-name: org.postgresql.Driver
     type: com.alibaba.druid.pool.DruidDataSource
@@ -36,8 +36,8 @@ spring:
 
 cas:
   server:
-    host: http://sso.ob.aihuishou.com:8080/casservice
-    login: http://sso.ob.aihuishou.com:8080/casservice/login
-    logout: http://sso.ob.aihuishou.com:8080/casservice/logout?service=http://aba.aihuishou.com:8080
+    host: http://:8080/casservice
+    login: http://:8080/casservice/login
+    logout: http://:8080/casservice/logout?service=http://aba.aihuishou.com:8080
   client:
     host: http://127.0.0.1:8084

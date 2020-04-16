@@ -1,9 +1,9 @@
 spring:
   datasource:
-    url: jdbc:mysql://rm-bp1pw59t9hspt57z5.mysql.rds.aliyuncs.com:3306/mobi_dashboard?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+    url: jdbc:mysql://:3306/mobi_dashboard?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
     username: mobi_dashboard
   redis:
-    host: r-bp1df75eafff5994.redis.rds.aliyuncs.com
+    host:
     database: 14
 
 server:
@@ -11,8 +11,8 @@ server:
 
 cas:
   client:
-     host: https://abdashboard.aihuishou.com
+     host: https://
   server:
-    host: https://sso.ob.aihuishou.com/casservice
-    login: https://sso.ob.aihuishou.com/casservice/login
-    logout: https://sso.ob.aihuishou.com/casservice/logout?service=https://abdashboard.aihuishou.com
+    host: https:///casservice
+    login: https:///casservice/login
+    logout: https:///casservice/logout?service=https://abdashboard.aihuishou.com
